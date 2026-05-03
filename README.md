@@ -31,50 +31,25 @@ The generated artifacts from the included product research live under
 
 ## Install From Main Branch
 
-After this repository is pushed to:
+After this repository is published at:
 
 ```text
 https://github.com/mutexdev/grill-to-spec
 ```
 
-install it as a local Codex plugin from the `main` branch:
+add it to Codex with the plugin marketplace command:
 
 ```bash
-mkdir -p ~/plugins
-git clone --branch main https://github.com/mutexdev/grill-to-spec.git ~/plugins/grill-to-spac
+codex plugin marketplace add mutexdev/grill-to-spec --ref main
 ```
 
-Then add the plugin to your local Codex marketplace file at
-`~/.agents/plugins/marketplace.json`:
+This lets Codex fetch and register the plugin source directly. Users do not
+need to clone this repository manually or edit `~/.agents/plugins/marketplace.json`
+by hand.
 
-```json
-{
-  "name": "local",
-  "interface": {
-    "displayName": "Local Plugins"
-  },
-  "plugins": [
-    {
-      "name": "grill-to-spac",
-      "source": {
-        "source": "local",
-        "path": "./plugins/grill-to-spac"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    }
-  ]
-}
-```
-
-If `marketplace.json` already exists, append only the object inside
-`plugins[]`.
-
-Restart Codex so it picks up the plugin. Then start Codex in a workspace and use
-one of the plugin starter prompts:
+Restart Codex, open `/plugins`, and install or enable **Grill to Spac** from
+the marketplace entry. Then start Codex in a workspace and use one of the
+plugin starter prompts:
 
 ```text
 Run grill-to-spac for this feature.
