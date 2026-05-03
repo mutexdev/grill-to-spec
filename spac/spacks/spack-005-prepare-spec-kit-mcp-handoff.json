@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "id": "SPACK-005",
+  "title": "Prepare Spec-Kit MCP handoff",
+  "type": "AFK",
+  "blocked_by": [
+    "SPACK-004"
+  ],
+  "user_stories": [
+    "US-005"
+  ],
+  "tasks": [
+    {
+      "id": "TASK-005",
+      "title": "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows whi",
+      "description": "Implement or verify the workflow behavior for REQ-005.",
+      "prd_refs": [
+        "REQ-005",
+        "AC-002"
+      ],
+      "acceptance_criteria": [
+        "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    },
+    {
+      "id": "TASK-010",
+      "title": "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reacha",
+      "description": "Implement or verify the workflow behavior for REQ-010.",
+      "prd_refs": [
+        "REQ-010",
+        "AC-001"
+      ],
+      "acceptance_criteria": [
+        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    }
+  ]
+}

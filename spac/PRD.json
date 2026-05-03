@@ -1,0 +1,361 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "grill-to-spac",
+    "slug": "grill-to-spac",
+    "generated_at": "2026-05-03T23:21:01.252678+00:00"
+  },
+  "source": {
+    "path": "grill-to-spac.md",
+    "summary": "Architecting Spec-Driven Agentic Workflows: Implementing Compound Skill Chains in OpenAI CodexThe paradigm of artificial intelligence in software engineering has shifted precipitously from isolated, ad-hoc code generation toward orchestrated, autonomous, and highly deterministic execution frameworks. As large language models demonstrate the capability to generate hundreds of thousands of lines of production-ready infrastructure code within condensed timeframes, the primary bottleneck in the soft",
+    "line_count": 1
+  },
+  "problem_statement": "Architecting Spec-Driven Agentic Workflows: Implementing Compound Skill Chains in OpenAI CodexThe paradigm of artificial intelligence in software engineering has shifted precipitously from isolated, ad-hoc code generation toward orchestrated, autonomous, and highly deterministic execution frameworks.",
+  "goals": [
+    "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation.",
+    "Ask one question at a time during grilling and include the recommended answer.",
+    "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
+    "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
+    "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
+    "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness."
+  ],
+  "non_goals": [
+    "Do not implement product code before the PRD, spacks, and quality gates exist.",
+    "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used."
+  ],
+  "actors": [
+    {
+      "name": "Codex user",
+      "role": "Supplies answers and approves phase gates."
+    },
+    {
+      "name": "Codex agent",
+      "role": "Runs the skill chain and writes artifacts."
+    },
+    {
+      "name": "reviewer",
+      "role": "Uses eval output to judge planning quality."
+    }
+  ],
+  "user_stories": [
+    {
+      "id": "US-001",
+      "actor": "Codex user",
+      "story": "As a Codex user, I want the workflow to run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-001"
+      ]
+    },
+    {
+      "id": "US-002",
+      "actor": "Codex agent",
+      "story": "As a Codex agent, I want the workflow to ask one question at a time during grilling and include the recommended answer, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-002"
+      ]
+    },
+    {
+      "id": "US-003",
+      "actor": "engineering team",
+      "story": "As a engineering team, I want the workflow to create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-003"
+      ]
+    },
+    {
+      "id": "US-004",
+      "actor": "reviewer",
+      "story": "As a reviewer, I want the workflow to create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-004"
+      ]
+    },
+    {
+      "id": "US-005",
+      "actor": "Codex user",
+      "story": "As a Codex user, I want the workflow to register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-005"
+      ]
+    },
+    {
+      "id": "US-006",
+      "actor": "Codex agent",
+      "story": "As a Codex agent, I want the workflow to generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-006"
+      ]
+    },
+    {
+      "id": "US-007",
+      "actor": "engineering team",
+      "story": "As a engineering team, I want the workflow to run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-007"
+      ]
+    },
+    {
+      "id": "US-008",
+      "actor": "reviewer",
+      "story": "As a reviewer, I want the workflow to do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist, so that spec-driven work stays traceable.",
+      "requirements": [
+        "REQ-008"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "statement": "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation.",
+      "priority": "must",
+      "source_refs": [
+        "source:1"
+      ],
+      "acceptance_criteria": [
+        "AC-001"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "statement": "Ask one question at a time during grilling and include the recommended answer.",
+      "priority": "must",
+      "source_refs": [
+        "source:2"
+      ],
+      "acceptance_criteria": [
+        "AC-002"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "statement": "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
+      "priority": "must",
+      "source_refs": [
+        "source:3"
+      ],
+      "acceptance_criteria": [
+        "AC-003"
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "statement": "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
+      "priority": "must",
+      "source_refs": [
+        "source:4"
+      ],
+      "acceptance_criteria": [
+        "AC-001"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "statement": "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
+      "priority": "must",
+      "source_refs": [
+        "source:5"
+      ],
+      "acceptance_criteria": [
+        "AC-002"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "statement": "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness.",
+      "priority": "must",
+      "source_refs": [
+        "source:6"
+      ],
+      "acceptance_criteria": [
+        "AC-003"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "statement": "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals.",
+      "priority": "should",
+      "source_refs": [
+        "source:7"
+      ],
+      "acceptance_criteria": [
+        "AC-001"
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "statement": "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist.",
+      "priority": "should",
+      "source_refs": [
+        "source:8"
+      ],
+      "acceptance_criteria": [
+        "AC-002"
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "statement": "Use a dense forward-context summary between phases instead of relying on a long raw conversation transcript.",
+      "priority": "should",
+      "source_refs": [
+        "source:9"
+      ],
+      "acceptance_criteria": [
+        "AC-003"
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "statement": "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reachable.",
+      "priority": "should",
+      "source_refs": [
+        "source:10"
+      ],
+      "acceptance_criteria": [
+        "AC-001"
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "statement": "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+    },
+    {
+      "id": "AC-002",
+      "statement": "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+    },
+    {
+      "id": "AC-003",
+      "statement": "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+    }
+  ],
+  "implementation_decisions": [
+    "Bundle grill-me, to-prd, to-spac, and evaluation as Codex skills in one plugin.",
+    "Register the Spec-Kit MCP server through .mcp.json and prefer MCP tools when available.",
+    "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
+    "Represent spacks as vertical slices with task-level PRD references and blocker metadata."
+  ],
+  "testing_decisions": [
+    "Validate the generator with unit tests that read the emitted JSON artifacts.",
+    "Treat traceability, actionability, and acceptance criteria coverage as first-class eval dimensions.",
+    "Keep tests dependency-free so the plugin can be verified in a sandboxed Codex workspace."
+  ],
+  "traceability": {
+    "requirement_coverage": [
+      {
+        "requirement_id": "REQ-001",
+        "user_story_ids": [
+          "US-001"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-001"
+        ]
+      },
+      {
+        "requirement_id": "REQ-002",
+        "user_story_ids": [
+          "US-002"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-002"
+        ]
+      },
+      {
+        "requirement_id": "REQ-003",
+        "user_story_ids": [
+          "US-003"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-003"
+        ]
+      },
+      {
+        "requirement_id": "REQ-004",
+        "user_story_ids": [
+          "US-004"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-001"
+        ]
+      },
+      {
+        "requirement_id": "REQ-005",
+        "user_story_ids": [
+          "US-005"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-002"
+        ]
+      },
+      {
+        "requirement_id": "REQ-006",
+        "user_story_ids": [
+          "US-006"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-003"
+        ]
+      },
+      {
+        "requirement_id": "REQ-007",
+        "user_story_ids": [
+          "US-007"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-001"
+        ]
+      },
+      {
+        "requirement_id": "REQ-008",
+        "user_story_ids": [
+          "US-008"
+        ],
+        "acceptance_criteria_ids": [
+          "AC-002"
+        ]
+      },
+      {
+        "requirement_id": "REQ-009",
+        "user_story_ids": [],
+        "acceptance_criteria_ids": [
+          "AC-003"
+        ]
+      },
+      {
+        "requirement_id": "REQ-010",
+        "user_story_ids": [],
+        "acceptance_criteria_ids": [
+          "AC-001"
+        ]
+      }
+    ],
+    "artifact_contracts": [
+      "PRD.json",
+      "spacks/index.json",
+      "spacks/SPACK-*.json",
+      "evals/evaluation.json"
+    ]
+  },
+  "quality_gates": [
+    {
+      "id": "QG-001",
+      "name": "PRD schema completeness",
+      "threshold": 1.0
+    },
+    {
+      "id": "QG-002",
+      "name": "Every spack has tasks",
+      "threshold": 1.0
+    },
+    {
+      "id": "QG-003",
+      "name": "Every task has PRD references",
+      "threshold": 1.0
+    },
+    {
+      "id": "QG-004",
+      "name": "Overall eval score",
+      "threshold": 0.75
+    }
+  ]
+}

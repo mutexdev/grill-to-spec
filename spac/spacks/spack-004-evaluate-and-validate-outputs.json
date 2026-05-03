@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "id": "SPACK-004",
+  "title": "Evaluate and validate outputs",
+  "type": "AFK",
+  "blocked_by": [
+    "SPACK-003"
+  ],
+  "user_stories": [
+    "US-006",
+    "US-008"
+  ],
+  "tasks": [
+    {
+      "id": "TASK-006",
+      "title": "Generate an evaluation report that scores PRD completeness, spack traceability, task actio",
+      "description": "Implement or verify the workflow behavior for REQ-006.",
+      "prd_refs": [
+        "REQ-006",
+        "AC-003"
+      ],
+      "acceptance_criteria": [
+        "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist",
+      "description": "Implement or verify the workflow behavior for REQ-008.",
+      "prd_refs": [
+        "REQ-008",
+        "AC-002"
+      ],
+      "acceptance_criteria": [
+        "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    }
+  ]
+}

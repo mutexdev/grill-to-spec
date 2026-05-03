@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/grill-to-spac/spack.schema.json",
+  "title": "Grill to Spac Spack",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "type",
+    "blocked_by",
+    "user_stories",
+    "tasks"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^SPACK-[0-9]{3}$"
+    },
+    "type": {
+      "enum": [
+        "AFK",
+        "HITL"
+      ]
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "prd_refs",
+          "acceptance_criteria",
+          "verification"
+        ]
+      }
+    }
+  }
+}

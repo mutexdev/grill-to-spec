@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "minimum_overall_score": 0.75,
+  "dimensions": {
+    "prd_completeness": "Required PRD.json sections are present and non-empty.",
+    "spack_traceability": "Every spack has tasks and every task links back to PRD IDs.",
+    "task_actionability": "Tasks have acceptance criteria and verification commands.",
+    "testability": "Acceptance criteria and testing decisions are sufficient for automated checks.",
+    "mcp_readiness": "The plugin has Spec-Kit MCP registration or an offline fallback."
+  }
+}

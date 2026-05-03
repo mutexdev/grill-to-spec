@@ -1,0 +1,46 @@
+{
+  "name": "grill-to-spac",
+  "version": "0.1.0",
+  "description": "Codex plugin for grilling requirements, generating PRD.json, decomposing spacks, and evaluating output quality.",
+  "author": {
+    "name": "grill-to-spac maintainers",
+    "email": "maintainers@example.com",
+    "url": "https://github.com/mutexdev/skills"
+  },
+  "homepage": "https://docs.rs/spec-kit-mcp/latest/spec_kit_mcp/",
+  "repository": "https://github.com/mutexdev/skills",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "skills",
+    "prd",
+    "spec-kit",
+    "spac",
+    "evaluation"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Grill to Spac",
+    "shortDescription": "Turn grilled context into PRD.json, spacks, tasks, and evals.",
+    "longDescription": "Runs a phase-gated Codex workflow: grill the user one question at a time, synthesize a machine-actionable PRD.json, decompose the PRD into traceable spacks with tasks, and evaluate artifact quality.",
+    "developerName": "grill-to-spac maintainers",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Planning",
+      "MCP",
+      "Evaluation"
+    ],
+    "websiteURL": "https://docs.rs/spec-kit-mcp/latest/spec_kit_mcp/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Run grill-to-spac for this feature.",
+      "Create PRD.json and spacks.",
+      "Evaluate PRD and spack quality."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

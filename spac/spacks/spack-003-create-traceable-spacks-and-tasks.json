@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "id": "SPACK-003",
+  "title": "Create traceable spacks and tasks",
+  "type": "AFK",
+  "blocked_by": [
+    "SPACK-002"
+  ],
+  "user_stories": [],
+  "tasks": [
+    {
+      "id": "TASK-009",
+      "title": "Use a dense forward-context summary between phases instead of relying on a long raw conver",
+      "description": "Implement or verify the workflow behavior for REQ-009.",
+      "prd_refs": [
+        "REQ-009",
+        "AC-003"
+      ],
+      "acceptance_criteria": [
+        "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    }
+  ]
+}

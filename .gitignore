@@ -1,0 +1,40 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and local tooling
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Node and package-manager caches
+node_modules/
+.npm/
+.pnpm-store/
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Build and temporary output
+dist/
+build/
+tmp/
+temp/
+*.log
+
+# Local Codex/session state
+.codex/
+.codex-cache/
+

@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "id": "SPACK-001",
+  "title": "Grill and phase-gate discovery",
+  "type": "HITL",
+  "blocked_by": [],
+  "user_stories": [
+    "US-001",
+    "US-002",
+    "US-007"
+  ],
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation",
+      "description": "Implement or verify the workflow behavior for REQ-001.",
+      "prd_refs": [
+        "REQ-001",
+        "AC-001"
+      ],
+      "acceptance_criteria": [
+        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Ask one question at a time during grilling and include the recommended answer",
+      "description": "Implement or verify the workflow behavior for REQ-002.",
+      "prd_refs": [
+        "REQ-002",
+        "AC-002"
+      ],
+      "acceptance_criteria": [
+        "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    },
+    {
+      "id": "TASK-007",
+      "title": "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answ",
+      "description": "Implement or verify the workflow behavior for REQ-007.",
+      "prd_refs": [
+        "REQ-007",
+        "AC-001"
+      ],
+      "acceptance_criteria": [
+        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    }
+  ]
+}

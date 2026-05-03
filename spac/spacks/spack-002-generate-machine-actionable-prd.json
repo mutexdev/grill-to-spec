@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "id": "SPACK-002",
+  "title": "Generate machine-actionable PRD",
+  "type": "AFK",
+  "blocked_by": [
+    "SPACK-001"
+  ],
+  "user_stories": [
+    "US-003",
+    "US-004"
+  ],
+  "tasks": [
+    {
+      "id": "TASK-003",
+      "title": "Create PRD.json with user stories, requirements, acceptance criteria, implementation decis",
+      "description": "Implement or verify the workflow behavior for REQ-003.",
+      "prd_refs": [
+        "REQ-003",
+        "AC-003"
+      ],
+      "acceptance_criteria": [
+        "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HIT",
+      "description": "Implement or verify the workflow behavior for REQ-004.",
+      "prd_refs": [
+        "REQ-004",
+        "AC-001"
+      ],
+      "acceptance_criteria": [
+        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spac.py",
+        "Run python3 scripts/grill_to_spac.py validate --output spac"
+      ]
+    }
+  ]
+}
