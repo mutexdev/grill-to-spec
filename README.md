@@ -8,6 +8,7 @@ phase-gated spec workflow:
 3. Decompose the PRD into traceable spacks with tasks.
 4. Register Spec-Kit MCP for external spec/task tooling.
 5. Evaluate the generated outputs with a repeatable rubric.
+6. Save the evaluated handoff as a Spec-Kit archive that includes `grill-me`.
 
 The generated artifacts from the included product research live under
 `spac/`.
@@ -28,6 +29,7 @@ The generated artifacts from the included product research live under
 - `evals/rubric.json` - scoring rubric.
 - `tests/test_grill_to_spac.py` - regression tests for PRD, spack, and eval
   output.
+- `spac/archive/` - generated Spec-Kit archives and archive manifests.
 
 ## Install From Main Branch
 
@@ -53,8 +55,8 @@ plugin starter prompts:
 
 ```text
 Run grill-to-spac for this feature.
-Create PRD.json and spacks.
-Evaluate PRD and spack quality.
+Create PRD.json, spacks, and evals.
+Create a Spec-Kit archive with the eval report.
 ```
 
 If you only want one bundled skill instead of the full plugin, install a skill
@@ -89,6 +91,17 @@ Re-run the eval report:
 ```bash
 python3 -B scripts/grill_to_spac.py eval --output spac
 ```
+
+Create the shareable Spec-Kit archive:
+
+```bash
+python3 -B scripts/grill_to_spac.py archive --output spac
+```
+
+This refreshes `spac/evals/evaluation.json`, validates the artifacts, and writes
+`spac/archive/<project>-spec-kit-archive.zip` plus a JSON manifest. The archive
+contains the PRD, spacks, eval report, `grill-me` skill, plugin manifest, and
+Spec-Kit MCP config.
 
 Run tests:
 
@@ -134,6 +147,7 @@ python3 -B -m unittest tests/test_grill_to_spac.py
 python3 -B scripts/grill_to_spac.py validate --output spac
 python3 -B -m json.tool .codex-plugin/plugin.json
 python3 -B -m json.tool .mcp.json
+python3 -B scripts/grill_to_spac.py archive --output spac
 ```
 
 The generated eval report is written to `spac/evals/evaluation.json`.

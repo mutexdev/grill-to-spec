@@ -23,8 +23,10 @@ The minimum acceptable overall score is `0.75`.
 
 ```bash
 python3 scripts/grill_to_spac.py eval --output spac
+python3 scripts/grill_to_spac.py archive --output spac
 python3 scripts/grill_to_spac.py validate --output spac
 ```
 
 Report the overall score, strongest evidence, risks, and recommended follow-up
-before claiming the workflow is complete.
+before claiming the workflow is complete. When creating the archive, confirm it
+contains `spac/evals/evaluation.json` and `skills/grill-me/SKILL.md`.

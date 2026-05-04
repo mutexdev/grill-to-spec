@@ -1,6 +1,7 @@
 import json
 import sys
 import unittest
+import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -145,6 +146,7 @@ class GrillToSpacTests(unittest.TestCase):
             self.assertIn("spacks", requirement_text)
             self.assertIn("spec-kit mcp", requirement_text)
             self.assertIn("evaluation", requirement_text)
+            self.assertIn("spec-kit archive", requirement_text)
 
             for story in prd["user_stories"]:
                 self.assertLessEqual(len(story["story"]), 260)
@@ -185,6 +187,76 @@ class GrillToSpacTests(unittest.TestCase):
             self.assertGreaterEqual(len(report["strengths"]), 1)
             self.assertGreaterEqual(len(report["risks"]), 1)
             self.assertGreaterEqual(len(report["recommendations"]), 1)
+
+    def test_creates_spec_kit_archive_with_eval_and_grill_me_assets(self):
+        from scripts.grill_to_spac import create_archive, generate_artifacts
+
+        with TemporaryDirectory() as tmp:
+            output_dir = Path(tmp) / "spac"
+            archive_dir = Path(tmp) / "archive"
+            generate_artifacts(
+                source_text=SAMPLE_RESEARCH,
+                output_dir=output_dir,
+                project_name="Conversational Recipe Builder",
+            )
+
+            result = create_archive(output_dir=output_dir, archive_dir=archive_dir)
+
+            archive_path = result["archive"]
+            manifest_path = result["manifest"]
+            self.assertEqual(archive_path.name, "conversational-recipe-builder-spec-kit-archive.zip")
+            self.assertTrue(archive_path.exists())
+            self.assertTrue(manifest_path.exists())
+
+            manifest = json.loads(manifest_path.read_text())
+            self.assertEqual(manifest["schema_version"], "1.0")
+            self.assertEqual(manifest["archive_format"], "spec-kit")
+            self.assertEqual(manifest["project"], "Conversational Recipe Builder")
+            self.assertGreaterEqual(manifest["overall_score"], 0.75)
+            self.assertIn("spac/evals/evaluation.json", manifest["entries"])
+            self.assertIn("skills/grill-me/SKILL.md", manifest["entries"])
+
+            with zipfile.ZipFile(archive_path) as archive:
+                entries = set(archive.namelist())
+
+            expected_entries = {
+                "spac/PRD.json",
+                "spac/evals/evaluation.json",
+                "spac/spacks/index.json",
+                "skills/grill-me/SKILL.md",
+                "skills/grill-to-spac/SKILL.md",
+                ".codex-plugin/plugin.json",
+                ".mcp.json",
+            }
+            self.assertTrue(expected_entries.issubset(entries))
+
+    def test_archive_requirement_is_grouped_with_eval_spack(self):
+        from scripts.grill_to_spac import generate_artifacts
+
+        with TemporaryDirectory() as tmp:
+            artifacts = generate_artifacts(
+                source_text=DENSE_PRODUCT_RESEARCH,
+                output_dir=Path(tmp),
+                project_name="grill-to-spac",
+            )
+
+            spacks = {
+                json.loads(path.read_text())["id"]: json.loads(path.read_text())
+                for path in artifacts["spacks"]
+            }
+            archive_tasks = [
+                task
+                for task in spacks["SPACK-004"]["tasks"]
+                if "Spec-Kit archive" in task["title"]
+            ]
+            misplaced_tasks = [
+                task
+                for task in spacks["SPACK-001"]["tasks"]
+                if "Spec-Kit archive" in task["title"]
+            ]
+
+            self.assertEqual(len(archive_tasks), 1)
+            self.assertEqual(misplaced_tasks, [])
 
 
 if __name__ == "__main__":

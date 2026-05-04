@@ -27,15 +27,15 @@
       ]
     },
     {
-      "id": "TASK-010",
+      "id": "TASK-011",
       "title": "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reacha",
-      "description": "Implement or verify the workflow behavior for REQ-010.",
+      "description": "Implement or verify the workflow behavior for REQ-011.",
       "prd_refs": [
-        "REQ-010",
-        "AC-001"
+        "REQ-011",
+        "AC-002"
       ],
       "acceptance_criteria": [
-        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+        "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spac.py",

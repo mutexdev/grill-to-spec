@@ -32,7 +32,7 @@
       "id": "SPACK-004",
       "title": "Evaluate and validate outputs",
       "path": "spack-004-evaluate-and-validate-outputs.json",
-      "task_count": 2,
+      "task_count": 4,
       "blocked_by": [
         "SPACK-003"
       ]
@@ -47,5 +47,5 @@
       ]
     }
   ],
-  "task_count": 10
+  "task_count": 12
 }

@@ -23,6 +23,7 @@ Write artifacts under `spac/` unless the user names another output directory:
 - `spac/spacks/index.json`
 - `spac/spacks/SPACK-*.json`
 - `spac/evals/evaluation.json`
+- `spac/archive/*-spec-kit-archive.zip`
 
 ## Workflow
 
@@ -67,7 +68,13 @@ Write artifacts under `spac/` unless the user names another output directory:
    - Run `python3 scripts/grill_to_spac.py eval --output spac`.
    - Report the overall score and any risks before implementation starts.
 
-7. **Verify**
+7. **Archive**
+   - Run `python3 scripts/grill_to_spac.py archive --output spac`.
+   - The archive must include `spac/evals/evaluation.json`,
+     `skills/grill-me/SKILL.md`, `.codex-plugin/plugin.json`, and `.mcp.json`.
+   - Use the generated manifest as the shareable handoff inventory.
+
+8. **Verify**
    - Run `python3 scripts/grill_to_spac.py validate --output spac`.
    - Run the plugin tests if this repository contains them:
      `python3 -m unittest tests/test_grill_to_spac.py`.
@@ -75,4 +82,5 @@ Write artifacts under `spac/` unless the user names another output directory:
 ## Completion Rule
 
 Do not call the workflow complete unless `PRD.json`, at least one spack file,
-task entries, and `evals/evaluation.json` exist and validation passes.
+task entries, `evals/evaluation.json`, and a Spec-Kit archive exist and
+validation passes.

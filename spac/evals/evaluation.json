@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-03T23:21:01.253850+00:00",
+  "generated_at": "2026-05-04T01:28:48.391340+00:00",
   "overall_score": 1.0,
   "scores": {
     "prd_completeness": 1.0,
@@ -19,6 +19,7 @@
   ],
   "recommendations": [
     "Review HITL spacks before executing implementation tasks.",
-    "Run Spec-Kit analyze/checklist tools when MCP is available to compare against local validation."
+    "Run Spec-Kit analyze/checklist tools when MCP is available to compare against local validation.",
+    "Create the Spec-Kit archive after eval so the shared handoff contains the latest score."
   ]
 }

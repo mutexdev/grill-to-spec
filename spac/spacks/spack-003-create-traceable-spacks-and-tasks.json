@@ -9,15 +9,15 @@
   "user_stories": [],
   "tasks": [
     {
-      "id": "TASK-009",
+      "id": "TASK-010",
       "title": "Use a dense forward-context summary between phases instead of relying on a long raw conver",
-      "description": "Implement or verify the workflow behavior for REQ-009.",
+      "description": "Implement or verify the workflow behavior for REQ-010.",
       "prd_refs": [
-        "REQ-009",
-        "AC-003"
+        "REQ-010",
+        "AC-001"
       ],
       "acceptance_criteria": [
-        "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spac.py",

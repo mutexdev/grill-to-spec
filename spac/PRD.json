@@ -3,7 +3,7 @@
   "project": {
     "name": "grill-to-spac",
     "slug": "grill-to-spac",
-    "generated_at": "2026-05-03T23:21:01.252678+00:00"
+    "generated_at": "2026-05-04T01:28:45.825671+00:00"
   },
   "source": {
     "path": "grill-to-spac.md",
@@ -17,11 +17,13 @@
     "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
     "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
     "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
-    "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness."
+    "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness.",
+    "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config."
   ],
   "non_goals": [
     "Do not implement product code before the PRD, spacks, and quality gates exist.",
-    "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used."
+    "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used.",
+    "Do not require third-party archive tooling beyond the Python standard library."
   ],
   "actors": [
     {
@@ -89,7 +91,7 @@
     {
       "id": "US-007",
       "actor": "engineering team",
-      "story": "As a engineering team, I want the workflow to run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals, so that spec-driven work stays traceable.",
+      "story": "As a engineering team, I want the workflow to create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-007"
       ]
@@ -97,7 +99,7 @@
     {
       "id": "US-008",
       "actor": "reviewer",
-      "story": "As a reviewer, I want the workflow to do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist, so that spec-driven work stays traceable.",
+      "story": "As a reviewer, I want the workflow to run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-008"
       ]
@@ -172,8 +174,8 @@
     },
     {
       "id": "REQ-007",
-      "statement": "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals.",
-      "priority": "should",
+      "statement": "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config.",
+      "priority": "must",
       "source_refs": [
         "source:7"
       ],
@@ -183,7 +185,7 @@
     },
     {
       "id": "REQ-008",
-      "statement": "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist.",
+      "statement": "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals.",
       "priority": "should",
       "source_refs": [
         "source:8"
@@ -194,7 +196,7 @@
     },
     {
       "id": "REQ-009",
-      "statement": "Use a dense forward-context summary between phases instead of relying on a long raw conversation transcript.",
+      "statement": "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist.",
       "priority": "should",
       "source_refs": [
         "source:9"
@@ -205,13 +207,35 @@
     },
     {
       "id": "REQ-010",
-      "statement": "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reachable.",
+      "statement": "Use a dense forward-context summary between phases instead of relying on a long raw conversation transcript.",
       "priority": "should",
       "source_refs": [
         "source:10"
       ],
       "acceptance_criteria": [
         "AC-001"
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "statement": "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reachable.",
+      "priority": "should",
+      "source_refs": [
+        "source:11"
+      ],
+      "acceptance_criteria": [
+        "AC-002"
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "statement": "Keep archive generation dependency-free so users can share the evaluated handoff without extra setup.",
+      "priority": "should",
+      "source_refs": [
+        "source:12"
+      ],
+      "acceptance_criteria": [
+        "AC-003"
       ]
     }
   ],
@@ -233,7 +257,8 @@
     "Bundle grill-me, to-prd, to-spac, and evaluation as Codex skills in one plugin.",
     "Keep the portable .mcp.json example and document that Codex MCP servers are configured in ~/.codex/config.toml.",
     "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
-    "Represent spacks as vertical slices with task-level PRD references and blocker metadata."
+    "Represent spacks as vertical slices with task-level PRD references and blocker metadata.",
+    "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and MCP metadata."
   ],
   "testing_decisions": [
     "Validate the generator with unit tests that read the emitted JSON artifacts.",
@@ -327,13 +352,28 @@
         "acceptance_criteria_ids": [
           "AC-001"
         ]
+      },
+      {
+        "requirement_id": "REQ-011",
+        "user_story_ids": [],
+        "acceptance_criteria_ids": [
+          "AC-002"
+        ]
+      },
+      {
+        "requirement_id": "REQ-012",
+        "user_story_ids": [],
+        "acceptance_criteria_ids": [
+          "AC-003"
+        ]
       }
     ],
     "artifact_contracts": [
       "PRD.json",
       "spacks/index.json",
       "spacks/SPACK-*.json",
-      "evals/evaluation.json"
+      "evals/evaluation.json",
+      "archive/*-spec-kit-archive.zip"
     ]
   },
   "quality_gates": [
@@ -356,6 +396,11 @@
       "id": "QG-004",
       "name": "Overall eval score",
       "threshold": 0.75
+    },
+    {
+      "id": "QG-005",
+      "name": "Archive contains eval and grill-me",
+      "threshold": 1.0
     }
   ]
 }

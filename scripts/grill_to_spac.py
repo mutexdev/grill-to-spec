@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import zipfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,6 +42,7 @@ CANONICAL_GRILL_TO_SPAC_GOALS = [
     "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
     "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
     "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness.",
+    "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config.",
 ]
 
 CANONICAL_GRILL_TO_SPAC_CONSTRAINTS = [
@@ -48,6 +50,7 @@ CANONICAL_GRILL_TO_SPAC_CONSTRAINTS = [
     "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist.",
     "Use a dense forward-context summary between phases instead of relying on a long raw conversation transcript.",
     "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reachable.",
+    "Keep archive generation dependency-free so users can share the evaluated handoff without extra setup.",
 ]
 
 
@@ -286,6 +289,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
         "non_goals": [
             "Do not implement product code before the PRD, spacks, and quality gates exist.",
             "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used.",
+            "Do not require third-party archive tooling beyond the Python standard library.",
         ],
         "actors": [
             {"name": "Codex user", "role": "Supplies answers and approves phase gates."},
@@ -300,6 +304,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
             "Keep the portable .mcp.json example and document that Codex MCP servers are configured in ~/.codex/config.toml.",
             "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
             "Represent spacks as vertical slices with task-level PRD references and blocker metadata.",
+            "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and MCP metadata.",
         ],
         "testing_decisions": [
             "Validate the generator with unit tests that read the emitted JSON artifacts.",
@@ -313,6 +318,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
                 "spacks/index.json",
                 "spacks/SPACK-*.json",
                 "evals/evaluation.json",
+                "archive/*-spec-kit-archive.zip",
             ],
         },
         "quality_gates": [
@@ -320,6 +326,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
             {"id": "QG-002", "name": "Every spack has tasks", "threshold": 1.0},
             {"id": "QG-003", "name": "Every task has PRD references", "threshold": 1.0},
             {"id": "QG-004", "name": "Overall eval score", "threshold": 0.75},
+            {"id": "QG-005", "name": "Archive contains eval and grill-me", "threshold": 1.0},
         ],
     }
 
@@ -330,10 +337,10 @@ def spack_category(requirement: dict[str, Any]) -> tuple[str, str, str]:
     def has_terms(*terms: str) -> bool:
         return any(re.search(rf"\b{re.escape(term)}\b", text) for term in terms)
 
+    if has_terms("evaluation", "evaluate", "eval", "evals", "score", "scores", "quality", "archive", "bundles", "share"):
+        return ("SPACK-004", "Evaluate and validate outputs", "AFK")
     if has_terms("question", "interview", "grill", "grilling", "ask", "phase-gated", "interactive"):
         return ("SPACK-001", "Grill and phase-gate discovery", "HITL")
-    if has_terms("evaluation", "evaluate", "eval", "evals", "score", "scores", "quality"):
-        return ("SPACK-004", "Evaluate and validate outputs", "AFK")
     if has_terms("mcp", "spec-kit", "spac-kit"):
         return ("SPACK-005", "Prepare Spec-Kit MCP handoff", "AFK")
     if has_terms("prd", "prd.json", "requirement", "requirements", "story", "stories", "acceptance"):
@@ -501,6 +508,7 @@ def evaluate_outputs(prd: dict[str, Any], spacks: list[dict[str, Any]], mcp_conf
         "recommendations": [
             "Review HITL spacks before executing implementation tasks.",
             "Run Spec-Kit analyze/checklist tools when MCP is available to compare against local validation.",
+            "Create the Spec-Kit archive after eval so the shared handoff contains the latest score.",
         ],
     }
 
@@ -508,6 +516,89 @@ def evaluate_outputs(prd: dict[str, Any], spacks: list[dict[str, Any]], mcp_conf
 def write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, sort_keys=False) + "\n")
+
+
+def archive_entry(path: Path, arcname: str) -> tuple[Path, str]:
+    if not path.exists():
+        raise FileNotFoundError(f"Archive input is missing: {path}")
+    return path, arcname
+
+
+def collect_archive_entries(output_dir: Path) -> list[tuple[Path, str]]:
+    entries: list[tuple[Path, str]] = [
+        archive_entry(ROOT / "README.md", "README.md"),
+        archive_entry(ROOT / ".codex-plugin" / "plugin.json", ".codex-plugin/plugin.json"),
+        archive_entry(ROOT / ".mcp.json", ".mcp.json"),
+        archive_entry(ROOT / "evals" / "rubric.json", "evals/rubric.json"),
+        archive_entry(ROOT / "scripts" / "__init__.py", "scripts/__init__.py"),
+        archive_entry(ROOT / "scripts" / "grill_to_spac.py", "scripts/grill_to_spac.py"),
+    ]
+
+    for directory in ["schemas", "skills"]:
+        for path in sorted((ROOT / directory).rglob("*")):
+            if path.is_file():
+                entries.append(archive_entry(path, path.relative_to(ROOT).as_posix()))
+
+    for path in sorted(output_dir.rglob("*.json")):
+        relative = path.relative_to(output_dir)
+        if "archive" in relative.parts:
+            continue
+        entries.append(archive_entry(path, f"spac/{relative.as_posix()}"))
+
+    return entries
+
+
+def create_archive(
+    output_dir: Path | str = "spac",
+    archive_dir: Path | str | None = None,
+) -> dict[str, Any]:
+    output = Path(output_dir)
+    prd, spacks = load_generated(output)
+    evaluation = evaluate_outputs(prd, spacks)
+    eval_path = output / "evals" / "evaluation.json"
+    write_json(eval_path, evaluation)
+
+    validation_errors = validate_output_dir(output)
+    if validation_errors:
+        raise ValueError("; ".join(validation_errors))
+
+    project_name = prd["project"]["name"]
+    archive_output = Path(archive_dir) if archive_dir is not None else output / "archive"
+    archive_output.mkdir(parents=True, exist_ok=True)
+    archive_stem = f"{slugify(project_name, 'grill-to-spac')}-spec-kit-archive"
+    archive_path = archive_output / f"{archive_stem}.zip"
+    manifest_path = archive_output / f"{archive_stem}-manifest.json"
+    entries = collect_archive_entries(output)
+    entry_names = [arcname for _, arcname in entries]
+    entry_names.append("archive-manifest.json")
+
+    manifest = {
+        "schema_version": "1.0",
+        "archive_format": "spec-kit",
+        "project": project_name,
+        "generated_at": evaluation["generated_at"],
+        "archive": archive_path.name,
+        "evaluation": "spac/evals/evaluation.json",
+        "overall_score": evaluation["overall_score"],
+        "entries": entry_names,
+    }
+    write_json(manifest_path, manifest)
+
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        for path, arcname in entries:
+            info = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(info, path.read_bytes())
+        info = zipfile.ZipInfo("archive-manifest.json", date_time=(1980, 1, 1, 0, 0, 0))
+        info.compress_type = zipfile.ZIP_DEFLATED
+        archive.writestr(info, manifest_path.read_bytes())
+
+    return {
+        "archive": archive_path,
+        "manifest": manifest_path,
+        "evaluation": eval_path,
+        "entries": entry_names,
+    }
 
 
 def generate_artifacts(
@@ -630,6 +721,25 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_archive(args: argparse.Namespace) -> int:
+    try:
+        result = create_archive(
+            output_dir=Path(args.output),
+            archive_dir=Path(args.archive_dir) if args.archive_dir else None,
+        )
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        print(json.dumps({"status": "failed", "error": str(exc)}, indent=2))
+        return 1
+
+    printable = {
+        key: [str(path) for path in value] if isinstance(value, list) else str(value)
+        for key, value in result.items()
+    }
+    printable["status"] = "passed"
+    print(json.dumps(printable, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate and validate grill-to-spac artifacts.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -647,6 +757,11 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate = subparsers.add_parser("eval", help="Re-run the artifact quality eval.")
     evaluate.add_argument("--output", default="spac", help="Artifact output directory.")
     evaluate.set_defaults(func=cmd_eval)
+
+    archive = subparsers.add_parser("archive", help="Create a Spec-Kit archive with evals and plugin assets.")
+    archive.add_argument("--output", default="spac", help="Artifact output directory.")
+    archive.add_argument("--archive-dir", help="Archive output directory. Defaults to <output>/archive.")
+    archive.set_defaults(func=cmd_archive)
 
     return parser
 
