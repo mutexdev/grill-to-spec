@@ -1,0 +1,20 @@
+{
+  "name": "grill-to-spec",
+  "interface": {
+    "displayName": "Grill to Spec"
+  },
+  "plugins": [
+    {
+      "name": "grill-to-spac",
+      "source": {
+        "source": "local",
+        "path": "."
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

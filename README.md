@@ -16,6 +16,8 @@ The generated artifacts from the included product research live under
 ## What Is Included
 
 - `.codex-plugin/plugin.json` - Codex plugin manifest.
+- `.agents/plugins/marketplace.json` - Codex marketplace descriptor that
+  points at the root plugin.
 - `.mcp.json` - Spec-Kit MCP server registration.
 - `skills/` - bundled Codex skills:
   - `grill-to-spac`
@@ -45,9 +47,17 @@ add it to Codex with the plugin marketplace command:
 codex plugin marketplace add mutexdev/grill-to-spec --ref main
 ```
 
-This lets Codex fetch and register the plugin source directly. Users do not
-need to clone this repository manually or edit `~/.agents/plugins/marketplace.json`
+This command expects a marketplace descriptor at
+`.agents/plugins/marketplace.json`; this repository includes one and maps the
+marketplace entry to the plugin manifest at `.codex-plugin/plugin.json`. Users
+do not need to clone this repository manually or edit local marketplace config
 by hand.
+
+For a local checkout sanity check, run:
+
+```bash
+codex plugin marketplace add /absolute/path/to/grill-to-spec
+```
 
 Restart Codex, open `/plugins`, and install or enable **Grill to Spac** from
 the marketplace entry. Then start Codex in a workspace and use one of the
