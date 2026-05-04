@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-04T03:40:11.325721+00:00",
+  "generated_at": "2026-05-04T04:12:40.549107+00:00",
   "overall_score": 1.0,
   "scores": {
     "prd_completeness": 1.0,
@@ -17,9 +17,10 @@
     "Implementation remains approval-gated after PRD, task artifacts, eval, archive, and validation are complete.",
     "Spec Kit scripts and templates are bundled locally; no server startup is required."
   ],
+  "planning_safety_findings": [],
   "recommendations": [
-    "Review HITL task artifacts before executing implementation tasks.",
-    "Treat any Spec Kit implement command as a separate downstream action that requires explicit user approval.",
+    "Review HITL task artifacts before requesting downstream implementation.",
+    "Treat the quarantined Spec Kit implement reference as downstream-only material that requires separate explicit user approval.",
     "Use the vendored Spec Kit command templates and scripts when producing agent-native spec handoffs.",
     "Create the Spec-Kit archive after eval so the shared handoff contains the latest score."
   ]

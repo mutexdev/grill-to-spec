@@ -3,12 +3,12 @@
   "project": {
     "name": "grill-to-spec",
     "slug": "grill-to-spec",
-    "generated_at": "2026-05-04T03:39:58.126644+00:00"
+    "generated_at": "2026-05-04T04:10:07.952809+00:00"
   },
   "source": {
     "path": "grill-to-spec.md",
     "summary": "# Grill to Spec Local Spec Kit Integration Grill to Spec is a Codex plugin for turning rough product intent into a phase-gated, spec-driven handoff. The workflow is local and artifact-first: 1. Grill the user one question at a time until scope, edge cases, dependencies, quality gates, and testing expectations are explicit. 2. Convert the resolved context into `spec/PRD.json` with stable IDs for user stories, requirements, acceptance criteria, implementation decisions, testing decision",
-    "line_count": 92
+    "line_count": 98
   },
   "problem_statement": "Ad-hoc agent prompts lose requirements, produce weak task breakdowns, and leave no auditable quality signal for generated planning artifacts.",
   "goals": [
@@ -252,11 +252,11 @@
     },
     {
       "id": "AC-003",
-      "statement": "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, and an eval report."
+      "statement": "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, Spec Kit markdown, and an eval report."
     },
     {
       "id": "AC-004",
-      "statement": "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
+      "statement": "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, Spec Kit markdown, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
     }
   ],
   "implementation_decisions": [
@@ -402,7 +402,7 @@
     {
       "id": "QG-004",
       "name": "Overall eval score",
-      "threshold": 0.75
+      "threshold": 0.9
     },
     {
       "id": "QG-005",

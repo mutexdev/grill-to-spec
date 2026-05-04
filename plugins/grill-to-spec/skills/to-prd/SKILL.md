@@ -36,7 +36,8 @@ IDs.
 For deterministic artifacts, run:
 
 ```bash
-python3 scripts/grill_to_spec.py generate --source <source-file> --output spec
+python3 scripts/grill_to_spec.py generate --source <source-file> --output spec --specs-output specs
 ```
 
-Use the generated PRD as the source of truth for task artifact creation.
+Use the generated PRD as the source of truth for task artifact and Spec Kit
+markdown creation.

@@ -40,4 +40,5 @@ Use the bundled Spec Kit assets from `vendor/spec-kit/`:
 - `scripts/bash/*.sh` or `scripts/powershell/*.ps1`
 
 Keep `spec/task-artifacts/*.json` and `spec/task-artifacts/index.json` as the
-local work queue.
+local work queue. Render `specs/<feature-slug>/tasks.md` as an unchecked
+handoff view; generating that file does not authorize implementation.

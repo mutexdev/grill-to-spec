@@ -11,9 +11,10 @@ phase-gated, spec-driven handoff. The workflow is local and artifact-first:
 3. Decompose the PRD into `spec/task-artifacts/*.json` with vertical-slice tasks,
    blockers, HITL/AFK classification, acceptance criteria, verification commands,
    and PRD references.
-4. Use vendored Spec Kit assets from `vendor/spec-kit/` for command templates,
+4. Render Spec Kit-compatible markdown under `specs/<feature-slug>/`.
+5. Use vendored Spec Kit assets from `vendor/spec-kit/` for command templates,
    setup scripts, and workflow metadata.
-5. Evaluate artifact quality and archive the handoff for review or downstream
+6. Evaluate artifact quality and archive the handoff for review or downstream
    execution.
 
 ## Workflow Diagram
@@ -24,13 +25,14 @@ flowchart TD
     B --> C["Resolved context summary"]
     C --> D["To-PRD: write spec/PRD.json"]
     D --> E["To-Spec: write spec/task-artifacts/*.json"]
-    E --> F["Vendored Spec Kit scripts and templates"]
-    F --> G["Evaluate spec output"]
-    G --> H["Validate artifact contracts"]
-    H --> I["Archive evaluated Spec-Kit handoff"]
-    I --> J{"User review"}
-    J -->|"revise plan"| B
-    J -->|"approve implementation"| K["Separate downstream implementation"]
+    E --> F["Render specs/<slug>/ markdown"]
+    F --> G["Vendored Spec Kit planning scripts and templates"]
+    G --> H["Evaluate spec output"]
+    H --> I["Validate artifact contracts"]
+    I --> J["Archive evaluated planning handoff"]
+    J --> K{"User review"}
+    K -->|"revise plan"| B
+    K -->|"approve separately"| L["Separate downstream implementation request"]
 ```
 
 The workflow is intentionally artifact-first. Each phase consumes the previous
@@ -45,6 +47,8 @@ planning and any later implementation work.
   criteria, implementation decisions, testing decisions, and traceability.
 - Task decomposition creates vertical-slice task artifacts with blockers,
   HITL/AFK classification, verification commands, and PRD references.
+- Spec Kit markdown renders `spec.md`, `plan.md`, `tasks.md`, and checklists
+  from the reviewed JSON artifacts.
 - Spec Kit integration uses local files from `vendor/spec-kit/`; no server or
   runtime download is required for the handoff.
 - Evaluation and validation produce an auditable quality signal before archive
@@ -74,9 +78,11 @@ The plugin vendors these upstream GitHub Spec Kit paths:
 - `vendor/spec-kit/scripts/powershell/`
 - `vendor/spec-kit/templates/`
 - `vendor/spec-kit/workflows/speckit/`
+- `vendor/spec-kit/downstream-references/implement.md`
 
 Agents should use those local assets together with the generated `spec/` files.
-The local JSON artifacts remain the source of truth for traceability.
+The local JSON artifacts remain the source of truth for traceability, and
+`specs/<feature-slug>/` is the Spec Kit-compatible handoff view.
 
 ## Acceptance Criteria
 
@@ -86,7 +92,7 @@ The local JSON artifacts remain the source of truth for traceability.
   the package includes skills, runtime scripts, schemas, eval rubric, and
   vendored Spec Kit assets.
 - Given product research, when `scripts/grill_to_spec.py generate` runs, then it
-  writes `PRD.json`, task artifacts, and an eval report.
+  writes `PRD.json`, task artifacts, Spec Kit markdown, and an eval report.
 - Given generated artifacts, when archive creation runs, then the archive
-  contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill,
-  and vendored Spec Kit assets.
+  contains the PRD, task artifacts, Spec Kit markdown, eval report, plugin
+  manifest, grill-me skill, and vendored Spec Kit assets.

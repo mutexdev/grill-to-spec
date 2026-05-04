@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import unittest
 import zipfile
@@ -112,7 +113,6 @@ class GrillToSpecTests(unittest.TestCase):
             "vendor/spec-kit/templates/commands/checklist.md",
             "vendor/spec-kit/templates/commands/clarify.md",
             "vendor/spec-kit/templates/commands/constitution.md",
-            "vendor/spec-kit/templates/commands/implement.md",
             "vendor/spec-kit/templates/commands/plan.md",
             "vendor/spec-kit/templates/commands/specify.md",
             "vendor/spec-kit/templates/commands/tasks.md",
@@ -123,6 +123,7 @@ class GrillToSpecTests(unittest.TestCase):
             "vendor/spec-kit/templates/tasks-template.md",
             "vendor/spec-kit/templates/vscode-settings.json",
             "vendor/spec-kit/workflows/speckit/workflow.yml",
+            "vendor/spec-kit/downstream-references/implement.md",
         ]
         for relative_path in mirrored_files:
             packaged = package_root / relative_path
@@ -145,6 +146,36 @@ class GrillToSpecTests(unittest.TestCase):
         self.assertFalse((ROOT / ".mcp.json").exists())
         self.assertFalse((ROOT / "plugins/grill-to-spec/.mcp.json").exists())
 
+    def test_active_spec_kit_assets_quarantine_implementation_command(self):
+        from scripts import grill_to_spec
+
+        active_command_paths = [
+            ROOT / "vendor/spec-kit/templates/commands",
+            ROOT / "plugins/grill-to-spec/vendor/spec-kit/templates/commands",
+        ]
+        for command_dir in active_command_paths:
+            self.assertFalse((command_dir / "implement.md").exists())
+
+        reference_paths = [
+            ROOT / "vendor/spec-kit/downstream-references/implement.md",
+            ROOT / "plugins/grill-to-spec/vendor/spec-kit/downstream-references/implement.md",
+        ]
+        for reference_path in reference_paths:
+            self.assertTrue(reference_path.is_file())
+            self.assertIn("downstream reference", reference_path.read_text().lower())
+
+        self.assertNotIn("templates/commands/implement.md", grill_to_spec.REQUIRED_SPEC_KIT_ASSETS)
+
+        active_vendor_files = [
+            ROOT / "vendor/spec-kit/templates/vscode-settings.json",
+            ROOT / "vendor/spec-kit/workflows/speckit/workflow.yml",
+            ROOT / "plugins/grill-to-spec/vendor/spec-kit/templates/vscode-settings.json",
+            ROOT / "plugins/grill-to-spec/vendor/spec-kit/workflows/speckit/workflow.yml",
+        ]
+        for path in active_vendor_files:
+            text = path.read_text()
+            self.assertNotIn("speckit.implement", text, path.relative_to(ROOT))
+
     def test_spec_kit_task_handoff_does_not_auto_start_implementation(self):
         task_template_paths = [
             ROOT / "vendor/spec-kit/templates/commands/tasks.md",
@@ -160,6 +191,7 @@ class GrillToSpecTests(unittest.TestCase):
             for token in forbidden:
                 self.assertNotIn(token, text, f"{token} found in {template_path.relative_to(ROOT)}")
             self.assertIn("Implementation is approval-gated", text)
+            self.assertIn("downstream-references/implement.md", text)
 
         skill_paths = [
             ROOT / "skills/grill-to-spec/SKILL.md",
@@ -296,6 +328,78 @@ class GrillToSpecTests(unittest.TestCase):
             self.assertEqual(len(index["task_artifacts"]), len(task_artifact_paths))
             self.assertEqual(index["task_count"], len(seen_task_ids))
 
+    def test_generate_emits_spec_kit_markdown_handoff(self):
+        from scripts.grill_to_spec import generate_artifacts
+
+        with TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            output_dir = tmp_path / "spec"
+            specs_output = tmp_path / "specs"
+            artifacts = generate_artifacts(
+                source_text=SAMPLE_RESEARCH,
+                output_dir=output_dir,
+                specs_output_dir=specs_output,
+                project_name="Conversational Recipe Builder",
+            )
+
+            spec_kit_dir = artifacts["spec_kit_dir"]
+            self.assertEqual(spec_kit_dir, specs_output / "conversational-recipe-builder")
+            expected_files = {
+                "spec.md",
+                "plan.md",
+                "tasks.md",
+                "research.md",
+                "quickstart.md",
+                "data-model.md",
+                "checklists/requirements.md",
+                "contracts/acceptance-criteria.md",
+            }
+            self.assertTrue({path.relative_to(spec_kit_dir).as_posix() for path in spec_kit_dir.rglob("*") if path.is_file()}.issuperset(expected_files))
+
+            spec_md = (spec_kit_dir / "spec.md").read_text()
+            plan_md = (spec_kit_dir / "plan.md").read_text()
+            tasks_md = (spec_kit_dir / "tasks.md").read_text()
+            checklist_md = (spec_kit_dir / "checklists" / "requirements.md").read_text()
+
+            self.assertIn("**FR-001** (`REQ-001`)", spec_md)
+            self.assertIn("**US-001**", spec_md)
+            self.assertIn("AC-001", spec_md)
+            self.assertIn("Planning Boundary", plan_md)
+            self.assertIn("QG-004", plan_md)
+            self.assertIn("REQ-001", tasks_md)
+            self.assertRegex(tasks_md, r"(?m)^- \[ \] T\d{3} ")
+            self.assertNotRegex(tasks_md, r"(?i)- \[x\]")
+            self.assertNotIn("speckit.implement", tasks_md)
+            self.assertIn("FR-001", checklist_md)
+
+            task_lines = re.findall(r"(?m)^- \[ \] T\d{3} .+$", tasks_md)
+            self.assertGreaterEqual(len(task_lines), 3)
+            self.assertFalse((tmp_path / "src").exists())
+            self.assertFalse((tmp_path / "app").exists())
+            self.assertFalse((tmp_path / "backend").exists())
+
+    def test_materialize_existing_prd_and_task_artifacts(self):
+        from scripts.grill_to_spec import generate_artifacts, materialize_spec_kit_handoff
+
+        with TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            output_dir = tmp_path / "spec"
+            specs_output = tmp_path / "specs"
+            generate_artifacts(
+                source_text=SAMPLE_RESEARCH,
+                output_dir=output_dir,
+                specs_output_dir=None,
+                project_name="Conversational Recipe Builder",
+            )
+
+            self.assertFalse(specs_output.exists())
+            materialized = materialize_spec_kit_handoff(output_dir=output_dir, specs_output_dir=specs_output)
+
+            self.assertEqual(materialized, specs_output / "conversational-recipe-builder")
+            self.assertTrue((materialized / "spec.md").is_file())
+            self.assertTrue((materialized / "plan.md").is_file())
+            self.assertTrue((materialized / "tasks.md").is_file())
+
     def test_dense_product_research_uses_canonical_workflow_requirements(self):
         from scripts.grill_to_spec import generate_artifacts
 
@@ -346,7 +450,13 @@ class GrillToSpecTests(unittest.TestCase):
 
             report = json.loads(artifacts["evaluation"].read_text())
             self.assertEqual(report["schema_version"], "1.0")
-            self.assertGreaterEqual(report["overall_score"], 0.75)
+            self.assertGreaterEqual(report["overall_score"], 0.90)
+            high_safety_findings = [
+                finding
+                for finding in report["planning_safety_findings"]
+                if finding["severity"] in {"critical", "high"}
+            ]
+            self.assertEqual(high_safety_findings, [])
 
             for dimension in [
                 "prd_completeness",
@@ -359,24 +469,26 @@ class GrillToSpecTests(unittest.TestCase):
                 self.assertGreaterEqual(report["scores"][dimension], 0.0)
                 self.assertLessEqual(report["scores"][dimension], 1.0)
 
-            self.assertGreaterEqual(report["scores"]["testability"], 0.75)
+            self.assertGreaterEqual(report["scores"]["testability"], 0.90)
             self.assertGreaterEqual(len(report["strengths"]), 1)
             self.assertGreaterEqual(len(report["risks"]), 1)
             self.assertGreaterEqual(len(report["recommendations"]), 1)
 
-    def test_creates_spec_kit_archive_with_eval_and_grill_me_assets(self):
+    def test_creates_spec_kit_archive_with_eval_grill_me_and_specs_assets(self):
         from scripts.grill_to_spec import create_archive, generate_artifacts
 
         with TemporaryDirectory() as tmp:
             output_dir = Path(tmp) / "spec"
+            specs_output = Path(tmp) / "specs"
             archive_dir = Path(tmp) / "archive"
             generate_artifacts(
                 source_text=SAMPLE_RESEARCH,
                 output_dir=output_dir,
+                specs_output_dir=specs_output,
                 project_name="Conversational Recipe Builder",
             )
 
-            result = create_archive(output_dir=output_dir, archive_dir=archive_dir)
+            result = create_archive(output_dir=output_dir, specs_output_dir=specs_output, archive_dir=archive_dir)
 
             archive_path = result["archive"]
             manifest_path = result["manifest"]
@@ -388,8 +500,11 @@ class GrillToSpecTests(unittest.TestCase):
             self.assertEqual(manifest["schema_version"], "1.0")
             self.assertEqual(manifest["archive_format"], "spec-kit")
             self.assertEqual(manifest["project"], "Conversational Recipe Builder")
-            self.assertGreaterEqual(manifest["overall_score"], 0.75)
+            self.assertGreaterEqual(manifest["overall_score"], 0.90)
             self.assertIn("spec/evals/evaluation.json", manifest["entries"])
+            self.assertIn("specs/conversational-recipe-builder/spec.md", manifest["entries"])
+            self.assertIn("specs/conversational-recipe-builder/plan.md", manifest["entries"])
+            self.assertIn("specs/conversational-recipe-builder/tasks.md", manifest["entries"])
             self.assertIn("skills/grill-me/SKILL.md", manifest["entries"])
 
             with zipfile.ZipFile(archive_path) as archive:
@@ -399,6 +514,9 @@ class GrillToSpecTests(unittest.TestCase):
                 "spec/PRD.json",
                 "spec/evals/evaluation.json",
                 "spec/task-artifacts/index.json",
+                "specs/conversational-recipe-builder/spec.md",
+                "specs/conversational-recipe-builder/plan.md",
+                "specs/conversational-recipe-builder/tasks.md",
                 "skills/grill-me/SKILL.md",
                 "skills/grill-to-spec/SKILL.md",
                 ".codex-plugin/plugin.json",

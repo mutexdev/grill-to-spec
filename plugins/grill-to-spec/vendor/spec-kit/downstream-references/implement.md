@@ -5,6 +5,11 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
 ---
 
+> Grill to Spec downstream reference: this upstream Spec Kit implement command is
+> preserved for later, separately approved implementation work only. It is not an
+> active command template, not part of workflow completion, and must not be
+> invoked by the planning handoff.
+
 ## User Input
 
 ```text

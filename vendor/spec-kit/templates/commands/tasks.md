@@ -23,7 +23,8 @@ You **MUST** consider the user input before proceeding (if not empty).
 Implementation is approval-gated. This command generates `tasks.md` and may
 recommend analysis, but it must not invoke implementation commands, send an
 implementation handoff, edit product code, or mark tasks complete. The user must
-explicitly request implementation in a later step before `implement.md` is used.
+explicitly request implementation in a later step before the downstream-only
+reference at `vendor/spec-kit/downstream-references/implement.md` is used.
 
 ## Pre-Execution Checks
 
@@ -84,7 +85,7 @@ explicitly request implementation in a later step before `implement.md` is used.
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
    - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation tasks
+   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation-ready handoff tasks
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task

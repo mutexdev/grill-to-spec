@@ -20,7 +20,7 @@
         "AC-003"
       ],
       "acceptance_criteria": [
-        "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, and an eval report."
+        "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, Spec Kit markdown, and an eval report."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",
@@ -36,7 +36,7 @@
         "AC-004"
       ],
       "acceptance_criteria": [
-        "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
+        "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, Spec Kit markdown, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",

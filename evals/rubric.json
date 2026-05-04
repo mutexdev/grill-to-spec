@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "minimum_overall_score": 0.75,
+  "minimum_overall_score": 0.9,
   "dimensions": {
     "prd_completeness": "Required PRD.json sections are present and non-empty.",
     "task_artifact_traceability": "Every task artifact has tasks and every task links back to PRD IDs.",
     "task_actionability": "Tasks have acceptance criteria and verification commands.",
     "testability": "Acceptance criteria and testing decisions are sufficient for automated checks.",
-    "spec_kit_asset_readiness": "The plugin bundles the Spec Kit scripts, templates, and workflow metadata needed for local handoff."
+    "spec_kit_asset_readiness": "The plugin bundles active Spec Kit planning scripts, templates, and workflow metadata needed for local handoff while implementation references remain downstream-only."
   }
 }

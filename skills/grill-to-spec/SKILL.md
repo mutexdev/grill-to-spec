@@ -11,7 +11,8 @@ PRD, task artifacts, and eval report exist and the user approves implementation.
 ## Planning Boundary
 
 The grill-to-spec workflow ends with reviewed planning artifacts: PRD.json,
-task artifacts, eval output, and a Spec-Kit handoff archive.
+task artifacts, Spec Kit-compatible markdown, eval output, and a planning
+handoff archive.
 
 Do not invoke implementation commands, auto-send an implementation handoff, edit
 product code, or mark downstream tasks complete unless the user explicitly asks
@@ -33,6 +34,10 @@ Write artifacts under `spec/` unless the user names another output directory:
 - `spec/task-artifacts/TASKART-*.json`
 - `spec/evals/evaluation.json`
 - `spec/archive/*-spec-kit-archive.zip`
+- `specs/<feature-slug>/spec.md`
+- `specs/<feature-slug>/plan.md`
+- `specs/<feature-slug>/tasks.md`
+- `specs/<feature-slug>/checklists/requirements.md`
 
 ## Workflow
 
@@ -56,7 +61,7 @@ Write artifacts under `spec/` unless the user names another output directory:
    - Generate a machine-actionable JSON PRD with stable IDs for user stories,
      requirements, acceptance criteria, traceability, and quality gates.
    - Prefer the local deterministic generator for file output:
-     `python3 scripts/grill_to_spec.py generate --source <source> --output spec`.
+     `python3 scripts/grill_to_spec.py generate --source <source> --output spec --specs-output specs`.
 
 4. **Create Task Artifacts**
    - Use `to-spec` behavior.
@@ -68,12 +73,15 @@ Write artifacts under `spec/` unless the user names another output directory:
 5. **Spec Kit Local Handoff**
    - Use the bundled `vendor/spec-kit/templates/commands/*.md` command templates
      for specify, clarify, plan, tasks, analyze, and checklist flows.
-   - Treat `vendor/spec-kit/templates/commands/implement.md` as a downstream
-     reference only. It is not part of workflow completion and must not run
-     without a separate explicit user request.
+   - Treat `vendor/spec-kit/downstream-references/implement.md` as a downstream
+     reference only. It is not an active command template, is not part of
+     workflow completion, and must not run without a separate explicit user
+     request.
    - Use the bundled `vendor/spec-kit/scripts/` shell or PowerShell helpers when
      a project needs the upstream Spec Kit file layout.
    - Keep the local `spec/` artifacts as the source of truth.
+   - Render `specs/<feature-slug>/` markdown from the reviewed PRD and task
+     artifacts.
 
 6. **Evaluate**
    - Use `evaluate-spec-output` behavior.
@@ -83,6 +91,8 @@ Write artifacts under `spec/` unless the user names another output directory:
 7. **Archive**
    - Run `python3 scripts/grill_to_spec.py archive --output spec`.
    - The archive must include `spec/evals/evaluation.json`,
+     `specs/<feature-slug>/spec.md`, `specs/<feature-slug>/plan.md`,
+     `specs/<feature-slug>/tasks.md`,
      `skills/grill-me/SKILL.md`, `.codex-plugin/plugin.json`, and
      `vendor/spec-kit/`.
    - Use the generated manifest as the shareable handoff inventory.
@@ -94,7 +104,9 @@ Write artifacts under `spec/` unless the user names another output directory:
 
 ## Completion Rule
 
-Do not call the workflow complete unless `PRD.json`, at least one task artifact file,
-task entries, `evals/evaluation.json`, and a Spec-Kit archive exist and
-validation passes. Completion is a planning handoff, not authorization to edit
-product code.
+Do not call the workflow complete unless `PRD.json`, at least one task artifact
+file, task entries, Spec Kit markdown under `specs/<feature-slug>/`,
+`evals/evaluation.json`, and a planning handoff archive exist and validation
+passes with overall eval `>= 0.90` and zero critical/high planning-safety
+findings. Completion is a planning handoff, not authorization to edit product
+code.

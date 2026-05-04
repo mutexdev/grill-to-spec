@@ -17,16 +17,18 @@ Use `evals/rubric.json` and score:
 - testability
 - Spec Kit asset readiness
 
-The minimum acceptable overall score is `0.75`.
+The minimum acceptable overall score is `0.90`, with zero critical/high
+planning-safety findings.
 
 ## Commands
 
 ```bash
 python3 scripts/grill_to_spec.py eval --output spec
-python3 scripts/grill_to_spec.py archive --output spec
-python3 scripts/grill_to_spec.py validate --output spec
+python3 scripts/grill_to_spec.py archive --output spec --specs-output specs
+python3 scripts/grill_to_spec.py validate --output spec --specs-output specs
 ```
 
 Report the overall score, strongest evidence, risks, and recommended follow-up
 before claiming the workflow is complete. When creating the archive, confirm it
-contains `spec/evals/evaluation.json` and `skills/grill-me/SKILL.md`.
+contains `spec/evals/evaluation.json`, `specs/<feature-slug>/spec.md`,
+`specs/<feature-slug>/tasks.md`, and `skills/grill-me/SKILL.md`.

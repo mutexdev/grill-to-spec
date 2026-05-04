@@ -6,12 +6,13 @@ phase-gated spec workflow:
 1. Grill the user one question at a time.
 2. Generate a machine-actionable `PRD.json`.
 3. Decompose the PRD into traceable task artifacts with tasks.
-4. Use vendored Spec Kit scripts, command templates, and workflow metadata.
-5. Evaluate the generated outputs with a repeatable rubric.
-6. Save the evaluated handoff as a Spec-Kit archive that includes `grill-me`.
+4. Render Spec Kit-compatible markdown under `specs/<feature-slug>/`.
+5. Use vendored Spec Kit planning scripts, command templates, and workflow metadata.
+6. Evaluate the generated outputs with a repeatable rubric.
+7. Save the evaluated handoff as a planning archive that includes `grill-me`.
 
 The generated artifacts from the included product research live under
-`spec/`.
+`spec/` and `specs/grill-to-spec/`.
 
 The workflow intentionally stops at the planning handoff. It does not auto-start
 Spec Kit implementation, edit product code, or mark generated tasks complete
@@ -25,12 +26,13 @@ flowchart TD
     B --> C["Dense forward-context summary"]
     C --> D["to-prd creates spec/PRD.json"]
     D --> E["to-spec creates spec/task-artifacts/*.json"]
-    E --> F["Spec Kit assets from vendor/spec-kit/"]
-    F --> G["Eval writes spec/evals/evaluation.json"]
-    G --> H["Archive writes spec/archive/*-spec-kit-archive.zip"]
-    H --> I{"Review gate"}
-    I -->|"changes needed"| B
-    I -->|"approved separately"| J["Downstream Spec Kit implementation"]
+    E --> F["Spec Kit markdown in specs/<slug>/"]
+    F --> G["Spec Kit assets from vendor/spec-kit/"]
+    G --> H["Eval writes spec/evals/evaluation.json"]
+    H --> I["Archive writes spec/archive/*-spec-kit-archive.zip"]
+    I --> J{"Review gate"}
+    J -->|"changes needed"| B
+    J -->|"approved separately"| K["Separate downstream implementation request"]
 ```
 
 The diagram shows the intended boundary: Grill to Spec owns discovery,
@@ -44,7 +46,7 @@ the generated PRD, task artifacts, and eval report.
 | Forward context | Resolved grill decisions | Dense handoff summary for PRD generation |
 | PRD | Handoff summary or source markdown | `spec/PRD.json` |
 | Tasks | `spec/PRD.json` | `spec/task-artifacts/index.json` and task artifact JSON files |
-| Spec Kit handoff | Task artifacts plus `vendor/spec-kit/` | Local command-template and script handoff assets |
+| Spec Kit handoff | PRD and task artifacts | `specs/<feature-slug>/spec.md`, `plan.md`, `tasks.md`, and checklists |
 | Eval | PRD, task artifacts, and bundled Spec Kit assets | `spec/evals/evaluation.json` |
 | Archive | Evaluated artifacts and plugin assets | `spec/archive/*-spec-kit-archive.zip` plus manifest |
 
@@ -61,12 +63,13 @@ the generated PRD, task artifacts, and eval report.
   - `to-prd`
   - `to-spec`
   - `evaluate-spec-output`
-- `scripts/grill_to_spec.py` - deterministic local generator, validator, and
-  evaluator.
+- `scripts/grill_to_spec.py` - deterministic local generator, markdown
+  materializer, validator, and evaluator.
 - `schemas/` - JSON schema references for PRD and task artifacts.
 - `evals/rubric.json` - scoring rubric.
 - `vendor/spec-kit/` - vendored Spec Kit scripts, command templates, and
   workflow metadata copied from the upstream GitHub Spec Kit project.
+- `specs/` - generated Spec Kit-compatible markdown handoffs.
 - `tests/test_grill_to_spec.py` - regression tests for PRD, task artifact, and eval
   output.
 - `spec/archive/` - generated Spec-Kit archives and archive manifests.
@@ -103,8 +106,8 @@ plugin starter prompts:
 
 ```text
 Run grill-to-spec for this feature.
-Create PRD.json, task artifacts, and evals.
-Create a Spec-Kit archive with the eval report.
+Create PRD.json, Spec Kit specs, task artifacts, and evals.
+Create a planning handoff archive with the eval report.
 ```
 
 If you only want one bundled skill instead of the full plugin, install a skill
@@ -144,6 +147,7 @@ Generate artifacts from the included research file:
 python3 -B scripts/grill_to_spec.py generate \
   --source grill-to-spec.md \
   --output spec \
+  --specs-output specs \
   --project-name grill-to-spec
 ```
 
@@ -151,17 +155,17 @@ Refresh the full local handoff after changing docs, skills, schemas, or vendored
 assets:
 
 ```bash
-python3 -B scripts/grill_to_spec.py generate --source grill-to-spec.md --output spec --project-name grill-to-spec
-python3 -B scripts/grill_to_spec.py validate --output spec
+python3 -B scripts/grill_to_spec.py generate --source grill-to-spec.md --output spec --specs-output specs --project-name grill-to-spec
+python3 -B scripts/grill_to_spec.py validate --output spec --specs-output specs
 python3 -B scripts/grill_to_spec.py eval --output spec
-python3 -B scripts/grill_to_spec.py archive --output spec
+python3 -B scripts/grill_to_spec.py archive --output spec --specs-output specs
 python3 -B -m unittest tests/test_grill_to_spec.py
 ```
 
 Validate generated artifacts:
 
 ```bash
-python3 -B scripts/grill_to_spec.py validate --output spec
+python3 -B scripts/grill_to_spec.py validate --output spec --specs-output specs
 ```
 
 Re-run the eval report:
@@ -173,13 +177,13 @@ python3 -B scripts/grill_to_spec.py eval --output spec
 Create the shareable Spec-Kit archive:
 
 ```bash
-python3 -B scripts/grill_to_spec.py archive --output spec
+python3 -B scripts/grill_to_spec.py archive --output spec --specs-output specs
 ```
 
 This refreshes `spec/evals/evaluation.json`, validates the artifacts, and writes
 `spec/archive/<project>-spec-kit-archive.zip` plus a JSON manifest. The archive
-contains the PRD, task artifacts, eval report, `grill-me` skill, plugin
-manifest, and vendored Spec Kit assets.
+contains the PRD, task artifacts, Spec Kit markdown, eval report, `grill-me`
+skill, plugin manifest, and vendored Spec Kit assets.
 
 Run tests:
 
@@ -195,9 +199,12 @@ This plugin does not register or start a server. Spec Kit integration is local:
 - `vendor/spec-kit/scripts/powershell/*.ps1`
 - `vendor/spec-kit/templates/commands/*.md`
 - `vendor/spec-kit/workflows/speckit/workflow.yml`
+- `vendor/spec-kit/downstream-references/implement.md`
 
 The `grill-to-spec` skill uses the local PRD/task artifacts as the source of
-truth, then packages those artifacts together with the vendored Spec Kit assets.
+truth, renders markdown under `specs/`, then packages those artifacts together
+with the vendored Spec Kit assets. The `Write` capability is limited to planning
+artifacts and archives.
 
 ## Verification Status
 
@@ -205,9 +212,9 @@ Current local verification:
 
 ```text
 python3 -B -m unittest tests/test_grill_to_spec.py
-python3 -B scripts/grill_to_spec.py validate --output spec
+python3 -B scripts/grill_to_spec.py validate --output spec --specs-output specs
 python3 -B -m json.tool .codex-plugin/plugin.json
-python3 -B scripts/grill_to_spec.py archive --output spec
+python3 -B scripts/grill_to_spec.py archive --output spec --specs-output specs
 ```
 
 The generated eval report is written to `spec/evals/evaluation.json`.

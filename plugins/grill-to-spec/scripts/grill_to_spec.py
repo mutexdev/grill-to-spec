@@ -18,6 +18,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_SPECS_OUTPUT = object()
 REQUIRED_PRD_KEYS = [
     "schema_version",
     "project",
@@ -70,7 +71,6 @@ REQUIRED_SPEC_KIT_ASSETS = [
     "templates/commands/checklist.md",
     "templates/commands/clarify.md",
     "templates/commands/constitution.md",
-    "templates/commands/implement.md",
     "templates/commands/plan.md",
     "templates/commands/specify.md",
     "templates/commands/tasks.md",
@@ -89,6 +89,7 @@ class ArtifactPaths:
     task_artifacts: list[Path]
     task_artifact_index: Path
     evaluation: Path
+    spec_kit_dir: Path | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -96,6 +97,7 @@ class ArtifactPaths:
             "task_artifacts": self.task_artifacts,
             "task_artifact_index": self.task_artifact_index,
             "evaluation": self.evaluation,
+            "spec_kit_dir": self.spec_kit_dir,
         }
 
 
@@ -205,7 +207,7 @@ def derive_goals(sections: dict[str, str], source_text: str) -> list[str]:
     return dedupe(goalish[:7]) or [
         "Interview the user until the product and engineering intent is clear.",
         "Create a machine-actionable PRD.json artifact.",
-        "Create traceable task artifacts with implementation tasks.",
+        "Create traceable task artifacts with implementation-ready handoff tasks.",
         "Evaluate output quality with a repeatable rubric.",
     ]
 
@@ -373,7 +375,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
             {"id": "QG-001", "name": "PRD schema completeness", "threshold": 1.0},
             {"id": "QG-002", "name": "Every task artifact has tasks", "threshold": 1.0},
             {"id": "QG-003", "name": "Every task has PRD references", "threshold": 1.0},
-            {"id": "QG-004", "name": "Overall eval score", "threshold": 0.75},
+            {"id": "QG-004", "name": "Overall eval score", "threshold": 0.90},
             {"id": "QG-005", "name": "Archive contains eval and grill-me", "threshold": 1.0},
         ],
     }
@@ -532,6 +534,10 @@ def evaluate_outputs(
     existing_assets = sum(
         1 for relative_path in REQUIRED_SPEC_KIT_ASSETS if (spec_kit_assets_path / relative_path).exists()
     )
+    safety_findings = planning_safety_findings(spec_kit_assets_path)
+    high_safety_findings = [
+        finding for finding in safety_findings if finding["severity"] in {"critical", "high"}
+    ]
 
     scores = {
         "prd_completeness": score_fraction(complete_prd_keys, len(REQUIRED_PRD_KEYS)),
@@ -547,6 +553,8 @@ def evaluate_outputs(
     ]
     if prd_errors or task_artifact_errors:
         risks.extend(prd_errors + task_artifact_errors)
+    if high_safety_findings:
+        risks.extend(finding["message"] for finding in high_safety_findings)
     elif existing_assets != len(REQUIRED_SPEC_KIT_ASSETS):
         missing_assets = [
             relative_path
@@ -567,9 +575,10 @@ def evaluate_outputs(
             "Task artifacts are vertical slices with task-level verification commands.",
         ],
         "risks": risks,
+        "planning_safety_findings": safety_findings,
         "recommendations": [
-            "Review HITL task artifacts before executing implementation tasks.",
-            "Treat any Spec Kit implement command as a separate downstream action that requires explicit user approval.",
+            "Review HITL task artifacts before requesting downstream implementation.",
+            "Treat the quarantined Spec Kit implement reference as downstream-only material that requires separate explicit user approval.",
             "Use the vendored Spec Kit command templates and scripts when producing agent-native spec handoffs.",
             "Create the Spec-Kit archive after eval so the shared handoff contains the latest score.",
         ],
@@ -581,13 +590,438 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=False) + "\n")
 
 
+def write_markdown(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text.rstrip() + "\n")
+
+
+def infer_specs_output_dir(output_dir: Path | str) -> Path:
+    output = Path(output_dir)
+    if output.name == "spec":
+        return output.parent / "specs"
+    return output / "specs"
+
+
+def resolve_specs_output_dir(output_dir: Path | str, specs_output_dir: Path | str | None) -> Path:
+    return Path(specs_output_dir) if specs_output_dir is not None else infer_specs_output_dir(output_dir)
+
+
+def requirement_number(requirement_id: str) -> int:
+    match = re.search(r"(\d+)$", requirement_id)
+    return int(match.group(1)) if match else 0
+
+
+def functional_requirement_id(requirement_id: str) -> str:
+    return f"FR-{requirement_number(requirement_id):03d}"
+
+
+def task_number(task_id: str) -> int:
+    match = re.search(r"(\d+)$", task_id)
+    return int(match.group(1)) if match else 0
+
+
+def spec_task_id(task_id: str) -> str:
+    return f"T{task_number(task_id):03d}"
+
+
+def story_label(story_id: str | None) -> str:
+    if not story_id:
+        return "US1"
+    return f"US{requirement_number(story_id)}"
+
+
+def requirement_story_map(prd: dict[str, Any]) -> dict[str, str]:
+    mapping: dict[str, str] = {}
+    for story in prd.get("user_stories", []):
+        for requirement_id in story.get("requirements", []):
+            mapping[requirement_id] = story.get("id", "")
+    return mapping
+
+
+def acceptance_by_id(prd: dict[str, Any]) -> dict[str, str]:
+    return {item["id"]: item["statement"] for item in prd.get("acceptance_criteria", [])}
+
+
+def render_spec_markdown(prd: dict[str, Any]) -> str:
+    project = prd["project"]["name"]
+    slug = prd["project"]["slug"]
+    criteria = acceptance_by_id(prd)
+    lines = [
+        f"# Feature Specification: {project}",
+        "",
+        f"**Feature Branch**: `001-{slug}`",
+        f"**Created**: {prd['project']['generated_at']}",
+        "**Status**: Draft planning handoff",
+        f"**Input**: `{prd['source'].get('path') or 'resolved grill context'}`",
+        "",
+        "## Planning Boundary",
+        "",
+        "This handoff is planning-only. It may guide a later implementation request, but it must not run implementation commands, edit product code, or mark tasks complete.",
+        "",
+        "## User Scenarios & Testing",
+        "",
+    ]
+
+    for index, story in enumerate(prd.get("user_stories", []), start=1):
+        story_id = story["id"]
+        linked_criteria = [
+            criteria[criteria_id]
+            for requirement in prd.get("requirements", [])
+            if requirement["id"] in story.get("requirements", [])
+            for criteria_id in requirement.get("acceptance_criteria", [])
+            if criteria_id in criteria
+        ]
+        lines.extend(
+            [
+                f"### User Story {index} - **{story_id}** (Priority: P{index})",
+                "",
+                story["story"],
+                "",
+                f"**Why this priority**: Covers {', '.join(story.get('requirements', []))}.",
+                "",
+                "**Independent Test**: Review the linked acceptance scenarios and verification commands without executing implementation.",
+                "",
+                "**Acceptance Scenarios**:",
+                "",
+            ]
+        )
+        for criteria_index, statement in enumerate(linked_criteria or ["Review the linked PRD requirement."], start=1):
+            lines.append(f"{criteria_index}. {statement}")
+        lines.extend(["", "---", ""])
+
+    lines.extend(
+        [
+            "## Requirements",
+            "",
+            "### Functional Requirements",
+            "",
+        ]
+    )
+    for requirement in prd.get("requirements", []):
+        fr_id = functional_requirement_id(requirement["id"])
+        criteria_ids = ", ".join(requirement.get("acceptance_criteria", []))
+        lines.append(f"- **{fr_id}** (`{requirement['id']}`): System MUST {requirement['statement'].rstrip('.')}. Acceptance: {criteria_ids}.")
+
+    lines.extend(["", "### Traceability", ""])
+    story_by_requirement = requirement_story_map(prd)
+    for requirement in prd.get("requirements", []):
+        fr_id = functional_requirement_id(requirement["id"])
+        story_id = story_by_requirement.get(requirement["id"], "US-001")
+        criteria_ids = ", ".join(requirement.get("acceptance_criteria", []))
+        lines.append(f"- `{fr_id}` -> `{requirement['id']}` -> `{story_id}` -> {criteria_ids}")
+
+    lines.extend(["", "## Success Criteria", ""])
+    for gate in prd.get("quality_gates", []):
+        lines.append(f"- **{gate['id']}**: {gate['name']} threshold `{gate['threshold']}`.")
+
+    lines.extend(["", "## Assumptions", ""])
+    for non_goal in prd.get("non_goals", []):
+        lines.append(f"- {non_goal}")
+
+    return "\n".join(lines)
+
+
+def render_plan_markdown(prd: dict[str, Any], feature_dir: Path) -> str:
+    project = prd["project"]["name"]
+    slug = prd["project"]["slug"]
+    lines = [
+        f"# Implementation Plan: {project}",
+        "",
+        f"**Branch**: `001-{slug}` | **Date**: {prd['project']['generated_at']} | **Spec**: `spec.md`",
+        f"**Input**: Feature specification from `{feature_dir.as_posix()}/spec.md`",
+        "",
+        "## Summary",
+        "",
+        prd["problem_statement"],
+        "",
+        "## Planning Boundary",
+        "",
+        "This plan is a Spec Kit-compatible handoff. Implementation requires a separate post-review request; this workflow stops after PRD, specs, tasks, eval, validation, and archive generation.",
+        "",
+        "## Technical Context",
+        "",
+        "**Language/Version**: NEEDS CLARIFICATION in downstream implementation plan",
+        "**Primary Dependencies**: NEEDS CLARIFICATION in downstream implementation plan",
+        "**Storage**: N/A unless the reviewed PRD adds persistence requirements",
+        "**Testing**: Use the PRD acceptance criteria and generated task verification commands",
+        "**Target Platform**: Codex workspace with local Spec Kit assets",
+        "**Project Type**: Planning handoff",
+        "**Constraints**: Planning artifacts only; no product source edits in this workflow",
+        "",
+        "## Constitution Check",
+        "",
+        "- PASS: PRD exists with stable user story, requirement, acceptance, and quality gate IDs.",
+        "- PASS: Task artifacts remain unchecked and approval-gated.",
+        "- PASS: Active Spec Kit command templates exclude implementation execution.",
+        "",
+        "## Traceability",
+        "",
+    ]
+    for requirement in prd.get("requirements", []):
+        fr_id = functional_requirement_id(requirement["id"])
+        criteria_ids = ", ".join(requirement.get("acceptance_criteria", []))
+        lines.append(f"- `{fr_id}` maps to `{requirement['id']}` and acceptance `{criteria_ids}`.")
+    lines.extend(["", "## Quality Gates", ""])
+    for gate in prd.get("quality_gates", []):
+        lines.append(f"- `{gate['id']}` {gate['name']}: threshold `{gate['threshold']}`.")
+    lines.extend(
+        [
+            "",
+            "## Project Structure",
+            "",
+            "### Documentation (this feature)",
+            "",
+            "```text",
+            f"{feature_dir.as_posix()}/",
+            "|-- spec.md",
+            "|-- plan.md",
+            "|-- tasks.md",
+            "|-- research.md",
+            "|-- data-model.md",
+            "|-- quickstart.md",
+            "|-- contracts/",
+            "`-- checklists/",
+            "```",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def task_requirement_ref(task: dict[str, Any]) -> str:
+    for ref in task.get("prd_refs", []):
+        if ref.startswith("REQ-"):
+            return ref
+    return "REQ-001"
+
+
+def render_tasks_markdown(prd: dict[str, Any], task_artifacts: list[dict[str, Any]]) -> str:
+    project = prd["project"]["name"]
+    story_by_requirement = requirement_story_map(prd)
+    lines = [
+        f"# Tasks: {project}",
+        "",
+        f"**Input**: Design documents from `/specs/{prd['project']['slug']}/`",
+        "**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/",
+        "",
+        "**Planning Boundary**: All tasks are unchecked handoff items. Do not mark any task complete or edit product source until the user makes a separate post-review implementation request.",
+        "",
+        "## Format: `[ID] [P?] [Story] Description`",
+        "",
+        "Tasks use Spec Kit checklist syntax and include PRD references for traceability.",
+        "",
+    ]
+
+    phase = 1
+    for task_artifact in task_artifacts:
+        lines.extend(
+            [
+                f"## Phase {phase}: {task_artifact['title']} ({task_artifact['id']})",
+                "",
+                f"**Type**: {task_artifact['type']}",
+                f"**Blocked By**: {', '.join(task_artifact.get('blocked_by', [])) or 'None'}",
+                "",
+            ]
+        )
+        for task in task_artifact.get("tasks", []):
+            requirement_id = task_requirement_ref(task)
+            label = story_label(story_by_requirement.get(requirement_id))
+            fr_id = functional_requirement_id(requirement_id)
+            marker = "[P] " if task_artifact["type"] == "AFK" else ""
+            path = "spec/PRD.json"
+            refs = ", ".join(task.get("prd_refs", []))
+            lines.append(
+                f"- [ ] {spec_task_id(task['id'])} {marker}[{label}] Execute downstream handoff item for {fr_id}/{requirement_id} using {path}; refs: {refs}"
+            )
+        lines.extend(["", "---", ""])
+        phase += 1
+
+    lines.extend(
+        [
+            "## Dependencies & Execution Order",
+            "",
+            "- Review `spec.md`, `plan.md`, and `spec/PRD.json` before selecting tasks.",
+            "- Respect each task artifact's `blocked_by` list.",
+            "- Keep all boxes unchecked in this planning handoff.",
+            "- Implementation starts only after a separate explicit request.",
+            "",
+            "## Implementation Strategy",
+            "",
+            "Use User Story 1 as the first downstream slice after review. Run the listed verification commands before marking any later implementation task complete.",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_checklist_markdown(prd: dict[str, Any]) -> str:
+    lines = [
+        f"# Requirements Checklist: {prd['project']['name']}",
+        "",
+        "## Planning Quality",
+        "",
+    ]
+    for requirement in prd.get("requirements", []):
+        fr_id = functional_requirement_id(requirement["id"])
+        criteria_ids = ", ".join(requirement.get("acceptance_criteria", []))
+        lines.append(f"- [ ] {fr_id} maps to `{requirement['id']}` and acceptance criteria `{criteria_ids}`.")
+    lines.extend(
+        [
+            "- [ ] No task is checked complete in `tasks.md`.",
+            "- [ ] Implementation remains a separate post-review request.",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_research_markdown(prd: dict[str, Any]) -> str:
+    lines = [f"# Research: {prd['project']['name']}", "", "## Goals", ""]
+    lines.extend(f"- {goal}" for goal in prd.get("goals", []))
+    lines.extend(["", "## Non-Goals", ""])
+    lines.extend(f"- {item}" for item in prd.get("non_goals", []))
+    lines.extend(["", "## Testing Decisions", ""])
+    lines.extend(f"- {item}" for item in prd.get("testing_decisions", []))
+    return "\n".join(lines)
+
+
+def render_data_model_markdown(prd: dict[str, Any]) -> str:
+    lines = [
+        f"# Data Model: {prd['project']['name']}",
+        "",
+        "No product data entities were inferred by the deterministic fallback generator. The canonical machine-readable planning entities are:",
+        "",
+        "- PRD requirement: stable `REQ-###` item in `spec/PRD.json`.",
+        "- User story: stable `US-###` item linked to one or more requirements.",
+        "- Acceptance criterion: stable `AC-###` item linked through requirements.",
+        "- Task artifact: vertical-slice JSON work item under `spec/task-artifacts/`.",
+    ]
+    return "\n".join(lines)
+
+
+def render_contracts_markdown(prd: dict[str, Any]) -> str:
+    lines = [f"# Acceptance Contracts: {prd['project']['name']}", ""]
+    for criterion in prd.get("acceptance_criteria", []):
+        lines.append(f"- **{criterion['id']}**: {criterion['statement']}")
+    return "\n".join(lines)
+
+
+def render_quickstart_markdown(prd: dict[str, Any]) -> str:
+    slug = prd["project"]["slug"]
+    return "\n".join(
+        [
+            f"# Quickstart: {prd['project']['name']}",
+            "",
+            "Review the generated handoff without starting implementation:",
+            "",
+            "```bash",
+            "python3 -B scripts/grill_to_spec.py validate --output spec --specs-output specs",
+            "python3 -B scripts/grill_to_spec.py eval --output spec",
+            "python3 -B scripts/grill_to_spec.py archive --output spec --specs-output specs",
+            "```",
+            "",
+            f"Spec Kit markdown lives in `specs/{slug}/`. Implementation requires a separate explicit request after review.",
+        ]
+    )
+
+
+def materialize_spec_kit_handoff(
+    output_dir: Path | str = "spec",
+    specs_output_dir: Path | str | None = None,
+) -> Path:
+    output = Path(output_dir)
+    specs_output = resolve_specs_output_dir(output, specs_output_dir)
+    prd, task_artifacts = load_generated(output)
+    feature_dir = specs_output / prd["project"]["slug"]
+
+    write_markdown(feature_dir / "spec.md", render_spec_markdown(prd))
+    write_markdown(feature_dir / "plan.md", render_plan_markdown(prd, feature_dir))
+    write_markdown(feature_dir / "tasks.md", render_tasks_markdown(prd, task_artifacts))
+    write_markdown(feature_dir / "checklists" / "requirements.md", render_checklist_markdown(prd))
+    write_markdown(feature_dir / "research.md", render_research_markdown(prd))
+    write_markdown(feature_dir / "data-model.md", render_data_model_markdown(prd))
+    write_markdown(feature_dir / "contracts" / "acceptance-criteria.md", render_contracts_markdown(prd))
+    write_markdown(feature_dir / "quickstart.md", render_quickstart_markdown(prd))
+    return feature_dir
+
+
+def validate_spec_kit_handoff(
+    prd: dict[str, Any],
+    task_artifacts: list[dict[str, Any]],
+    specs_output_dir: Path,
+) -> list[str]:
+    errors: list[str] = []
+    feature_dir = specs_output_dir / prd["project"]["slug"]
+    required_files = [
+        "spec.md",
+        "plan.md",
+        "tasks.md",
+        "checklists/requirements.md",
+    ]
+    for relative_path in required_files:
+        if not (feature_dir / relative_path).exists():
+            errors.append(f"Missing specs/{prd['project']['slug']}/{relative_path}")
+    if errors:
+        return errors
+
+    spec_text = (feature_dir / "spec.md").read_text()
+    plan_text = (feature_dir / "plan.md").read_text()
+    tasks_text = (feature_dir / "tasks.md").read_text()
+
+    for requirement in prd.get("requirements", []):
+        fr_id = functional_requirement_id(requirement["id"])
+        if fr_id not in spec_text or requirement["id"] not in spec_text:
+            errors.append(f"Spec markdown missing trace for {fr_id}/{requirement['id']}")
+    for gate in prd.get("quality_gates", []):
+        if gate["id"] not in plan_text:
+            errors.append(f"Plan markdown missing quality gate {gate['id']}")
+    if re.search(r"(?i)- \[x\]", tasks_text):
+        errors.append("Spec Kit tasks.md contains completed tasks")
+    for task_artifact in task_artifacts:
+        for task in task_artifact.get("tasks", []):
+            if spec_task_id(task["id"]) not in tasks_text:
+                errors.append(f"Spec Kit tasks.md missing {spec_task_id(task['id'])}")
+    return errors
+
+
+def planning_safety_findings(spec_kit_assets_path: Path | None = None) -> list[dict[str, str]]:
+    assets = spec_kit_assets_path or ROOT / "vendor" / "spec-kit"
+    findings: list[dict[str, str]] = []
+    active_implement = assets / "templates" / "commands" / "implement.md"
+    if active_implement.exists():
+        findings.append(
+            {
+                "severity": "high",
+                "code": "active-implement-command",
+                "message": "Active Spec Kit command templates include implement.md.",
+            }
+        )
+
+    scans = [
+        (assets / "templates" / "vscode-settings.json", "vscode-speckit-implement"),
+        (assets / "workflows" / "speckit" / "workflow.yml", "workflow-speckit-implement"),
+        (assets / "templates" / "commands" / "tasks.md", "tasks-implement-handoff"),
+    ]
+    forbidden = ["speckit.implement", "label: Implement Project", "agent: speckit.implement"]
+    for path, code in scans:
+        if not path.exists():
+            continue
+        text = path.read_text()
+        if any(token in text for token in forbidden):
+            findings.append(
+                {
+                    "severity": "high",
+                    "code": code,
+                    "message": f"Active Spec Kit asset still references implementation handoff behavior: {path.relative_to(assets)}.",
+                }
+            )
+    return findings
+
+
 def archive_entry(path: Path, arcname: str) -> tuple[Path, str]:
     if not path.exists():
         raise FileNotFoundError(f"Archive input is missing: {path}")
     return path, arcname
 
 
-def collect_archive_entries(output_dir: Path) -> list[tuple[Path, str]]:
+def collect_archive_entries(output_dir: Path, specs_output_dir: Path | None = None) -> list[tuple[Path, str]]:
     entries: list[tuple[Path, str]] = [
         archive_entry(ROOT / "README.md", "README.md"),
         archive_entry(ROOT / ".codex-plugin" / "plugin.json", ".codex-plugin/plugin.json"),
@@ -607,20 +1041,28 @@ def collect_archive_entries(output_dir: Path) -> list[tuple[Path, str]]:
             continue
         entries.append(archive_entry(path, f"spec/{relative.as_posix()}"))
 
+    if specs_output_dir is not None and specs_output_dir.exists():
+        for path in sorted(specs_output_dir.rglob("*")):
+            if path.is_file():
+                entries.append(archive_entry(path, f"specs/{path.relative_to(specs_output_dir).as_posix()}"))
+
     return entries
 
 
 def create_archive(
     output_dir: Path | str = "spec",
+    specs_output_dir: Path | str | None = None,
     archive_dir: Path | str | None = None,
 ) -> dict[str, Any]:
     output = Path(output_dir)
+    specs_output = resolve_specs_output_dir(output, specs_output_dir)
+    materialize_spec_kit_handoff(output_dir=output, specs_output_dir=specs_output)
     prd, task_artifacts = load_generated(output)
     evaluation = evaluate_outputs(prd, task_artifacts)
     eval_path = output / "evals" / "evaluation.json"
     write_json(eval_path, evaluation)
 
-    validation_errors = validate_output_dir(output)
+    validation_errors = validate_output_dir(output, specs_output_dir=specs_output)
     if validation_errors:
         raise ValueError("; ".join(validation_errors))
 
@@ -630,7 +1072,7 @@ def create_archive(
     archive_stem = f"{slugify(project_name, 'grill-to-spec')}-spec-kit-archive"
     archive_path = archive_output / f"{archive_stem}.zip"
     manifest_path = archive_output / f"{archive_stem}-manifest.json"
-    entries = collect_archive_entries(output)
+    entries = collect_archive_entries(output, specs_output_dir=specs_output)
     entry_names = [arcname for _, arcname in entries]
     entry_names.append("archive-manifest.json")
 
@@ -642,6 +1084,8 @@ def create_archive(
         "archive": archive_path.name,
         "evaluation": "spec/evals/evaluation.json",
         "overall_score": evaluation["overall_score"],
+        "planning_safety_findings": evaluation["planning_safety_findings"],
+        "specs": f"specs/{prd['project']['slug']}/",
         "entries": entry_names,
     }
     write_json(manifest_path, manifest)
@@ -668,6 +1112,7 @@ def generate_artifacts(
     output_dir: Path | str,
     project_name: str | None = None,
     source_path: str | None = None,
+    specs_output_dir: Path | str | None | object = DEFAULT_SPECS_OUTPUT,
 ) -> dict[str, Any]:
     output = Path(output_dir)
     prd = build_prd(source_text, project_name=project_name, source_path=source_path)
@@ -706,12 +1151,18 @@ def generate_artifacts(
     index_path = task_artifacts_dir / "index.json"
     write_json(index_path, index)
     write_json(eval_path, evaluation)
+    spec_kit_dir = None
+    if specs_output_dir is DEFAULT_SPECS_OUTPUT:
+        spec_kit_dir = materialize_spec_kit_handoff(output_dir=output, specs_output_dir=infer_specs_output_dir(output))
+    elif specs_output_dir is not None:
+        spec_kit_dir = materialize_spec_kit_handoff(output_dir=output, specs_output_dir=Path(specs_output_dir))
 
     return ArtifactPaths(
         prd=prd_path,
         task_artifacts=task_artifact_paths,
         task_artifact_index=index_path,
         evaluation=eval_path,
+        spec_kit_dir=spec_kit_dir,
     ).as_dict()
 
 
@@ -732,7 +1183,8 @@ def load_generated(output_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any
     return prd, task_artifacts
 
 
-def validate_output_dir(output_dir: Path) -> list[str]:
+def validate_output_dir(output_dir: Path, specs_output_dir: Path | str | None = None) -> list[str]:
+    output_dir = Path(output_dir)
     errors: list[str] = []
     if not (output_dir / "PRD.json").exists():
         return ["Missing PRD.json"]
@@ -741,6 +1193,18 @@ def validate_output_dir(output_dir: Path) -> list[str]:
     prd, task_artifacts = load_generated(output_dir)
     errors.extend(validate_prd(prd))
     errors.extend(validate_task_artifacts(task_artifacts, prd))
+    report = evaluate_outputs(prd, task_artifacts)
+    if report["overall_score"] < 0.90:
+        errors.append(f"Overall eval score below 0.90: {report['overall_score']}")
+    specs_output = resolve_specs_output_dir(output_dir, specs_output_dir)
+    errors.extend(validate_spec_kit_handoff(prd, task_artifacts, specs_output))
+    high_safety_findings = [
+        finding
+        for finding in planning_safety_findings()
+        if finding["severity"] in {"critical", "high"}
+    ]
+    for finding in high_safety_findings:
+        errors.append(f"Planning safety finding: {finding['message']}")
     if not (output_dir / "task-artifacts" / "index.json").exists():
         errors.append("Missing task-artifacts/index.json")
     if not (output_dir / "evals" / "evaluation.json").exists():
@@ -756,6 +1220,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         output_dir=Path(args.output),
         project_name=args.project_name,
         source_path=str(source_path),
+        specs_output_dir=Path(args.specs_output),
     )
     printable = {
         key: [str(path) for path in value] if isinstance(value, list) else str(value)
@@ -766,11 +1231,11 @@ def cmd_generate(args: argparse.Namespace) -> int:
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
-    errors = validate_output_dir(Path(args.output))
+    errors = validate_output_dir(Path(args.output), specs_output_dir=Path(args.specs_output))
     if errors:
         print(json.dumps({"status": "failed", "errors": errors}, indent=2))
         return 1
-    print(json.dumps({"status": "passed", "output": args.output}, indent=2))
+    print(json.dumps({"status": "passed", "output": args.output, "specs_output": args.specs_output}, indent=2))
     return 0
 
 
@@ -788,6 +1253,7 @@ def cmd_archive(args: argparse.Namespace) -> int:
     try:
         result = create_archive(
             output_dir=Path(args.output),
+            specs_output_dir=Path(args.specs_output),
             archive_dir=Path(args.archive_dir) if args.archive_dir else None,
         )
     except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
@@ -803,18 +1269,34 @@ def cmd_archive(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_materialize(args: argparse.Namespace) -> int:
+    try:
+        feature_dir = materialize_spec_kit_handoff(
+            output_dir=Path(args.output),
+            specs_output_dir=Path(args.specs_output),
+        )
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        print(json.dumps({"status": "failed", "error": str(exc)}, indent=2))
+        return 1
+
+    print(json.dumps({"status": "passed", "spec_kit_dir": str(feature_dir)}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate and validate grill-to-spec artifacts.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    generate = subparsers.add_parser("generate", help="Generate PRD.json, task artifacts, and eval report.")
+    generate = subparsers.add_parser("generate", help="Generate PRD.json, task artifacts, eval report, and Spec Kit markdown.")
     generate.add_argument("--source", required=True, help="Source research, grill summary, or PRD markdown.")
     generate.add_argument("--output", default="spec", help="Artifact output directory.")
+    generate.add_argument("--specs-output", default="specs", help="Spec Kit markdown output directory.")
     generate.add_argument("--project-name", help="Override project name.")
     generate.set_defaults(func=cmd_generate)
 
     validate = subparsers.add_parser("validate", help="Validate generated artifacts.")
     validate.add_argument("--output", default="spec", help="Artifact output directory.")
+    validate.add_argument("--specs-output", default="specs", help="Spec Kit markdown output directory.")
     validate.set_defaults(func=cmd_validate)
 
     evaluate = subparsers.add_parser("eval", help="Re-run the artifact quality eval.")
@@ -823,8 +1305,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     archive = subparsers.add_parser("archive", help="Create a Spec-Kit archive with evals and plugin assets.")
     archive.add_argument("--output", default="spec", help="Artifact output directory.")
+    archive.add_argument("--specs-output", default="specs", help="Spec Kit markdown output directory.")
     archive.add_argument("--archive-dir", help="Archive output directory. Defaults to <output>/archive.")
     archive.set_defaults(func=cmd_archive)
+
+    materialize = subparsers.add_parser("materialize", help="Render Spec Kit markdown from existing PRD and task artifacts.")
+    materialize.add_argument("--output", default="spec", help="Artifact output directory.")
+    materialize.add_argument("--specs-output", default="specs", help="Spec Kit markdown output directory.")
+    materialize.set_defaults(func=cmd_materialize)
 
     return parser
 
