@@ -7,6 +7,13 @@ description: Break PRD.json into traceable task artifacts with vertical-slice ta
 
 Convert PRD requirements into independently executable task artifacts.
 
+## Planning Boundary
+
+Task artifacts describe downstream execution work, but creating them does not
+authorize implementation. Do not invoke implementation commands or edit product
+code unless the user separately approves implementation after reviewing the PRD,
+task artifacts, and eval output.
+
 ## Task Artifact Rules
 
 - Use vertical slices that deliver a narrow end-to-end behavior.

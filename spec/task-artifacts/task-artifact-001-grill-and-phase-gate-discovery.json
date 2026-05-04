@@ -6,14 +6,13 @@
   "blocked_by": [],
   "user_stories": [
     "US-001",
-    "US-002",
-    "US-008"
+    "US-002"
   ],
   "tasks": [
     {
       "id": "TASK-001",
       "title": "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation",
-      "description": "Implement or verify the workflow behavior for REQ-001.",
+      "description": "Plan or verify the workflow behavior for REQ-001 without executing downstream implementation.",
       "prd_refs": [
         "REQ-001",
         "AC-001"
@@ -29,7 +28,7 @@
     {
       "id": "TASK-002",
       "title": "Ask one question at a time during grilling and include the recommended answer",
-      "description": "Implement or verify the workflow behavior for REQ-002.",
+      "description": "Plan or verify the workflow behavior for REQ-002 without executing downstream implementation.",
       "prd_refs": [
         "REQ-002",
         "AC-002"
@@ -43,15 +42,31 @@
       ]
     },
     {
-      "id": "TASK-008",
+      "id": "TASK-009",
       "title": "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answ",
-      "description": "Implement or verify the workflow behavior for REQ-008.",
+      "description": "Plan or verify the workflow behavior for REQ-009 without executing downstream implementation.",
       "prd_refs": [
-        "REQ-008",
-        "AC-004"
+        "REQ-009",
+        "AC-001"
       ],
       "acceptance_criteria": [
-        "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
+        "Given the plugin manifest, when Codex loads the plugin, then no server entry is registered or launched."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
+      ]
+    },
+    {
+      "id": "TASK-011",
+      "title": "Do not invoke implementation commands, auto-send implementation handoffs, edit product cod",
+      "description": "Plan or verify the workflow behavior for REQ-011 without executing downstream implementation.",
+      "prd_refs": [
+        "REQ-011",
+        "AC-003"
+      ],
+      "acceptance_criteria": [
+        "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, and an eval report."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",

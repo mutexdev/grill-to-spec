@@ -14,7 +14,7 @@
     {
       "id": "TASK-003",
       "title": "Create PRD.json with user stories, requirements, acceptance criteria, implementation decis",
-      "description": "Implement or verify the workflow behavior for REQ-003.",
+      "description": "Plan or verify the workflow behavior for REQ-003 without executing downstream implementation.",
       "prd_refs": [
         "REQ-003",
         "AC-003"
@@ -30,7 +30,7 @@
     {
       "id": "TASK-004",
       "title": "Create task artifacts that decompose PRD requirements into vertical-slice tasks with block",
-      "description": "Implement or verify the workflow behavior for REQ-004.",
+      "description": "Plan or verify the workflow behavior for REQ-004 without executing downstream implementation.",
       "prd_refs": [
         "REQ-004",
         "AC-004"

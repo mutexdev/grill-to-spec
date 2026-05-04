@@ -145,6 +145,32 @@ class GrillToSpecTests(unittest.TestCase):
         self.assertFalse((ROOT / ".mcp.json").exists())
         self.assertFalse((ROOT / "plugins/grill-to-spec/.mcp.json").exists())
 
+    def test_spec_kit_task_handoff_does_not_auto_start_implementation(self):
+        task_template_paths = [
+            ROOT / "vendor/spec-kit/templates/commands/tasks.md",
+            ROOT / "plugins/grill-to-spec/vendor/spec-kit/templates/commands/tasks.md",
+        ]
+        forbidden = [
+            "label: Implement Project",
+            "agent: speckit.implement",
+            "Start the implementation in phases",
+        ]
+        for template_path in task_template_paths:
+            text = template_path.read_text()
+            for token in forbidden:
+                self.assertNotIn(token, text, f"{token} found in {template_path.relative_to(ROOT)}")
+            self.assertIn("Implementation is approval-gated", text)
+
+        skill_paths = [
+            ROOT / "skills/grill-to-spec/SKILL.md",
+            ROOT / "plugins/grill-to-spec/skills/grill-to-spec/SKILL.md",
+        ]
+        for skill_path in skill_paths:
+            text = skill_path.read_text()
+            self.assertIn("Planning Boundary", text)
+            self.assertIn("Do not invoke implementation commands", text)
+            self.assertNotIn("and implement flows", text)
+
     def test_public_plugin_names_use_spec_not_spac(self):
         plugin_manifest_paths = [
             ROOT / ".codex-plugin/plugin.json",
@@ -288,6 +314,8 @@ class GrillToSpecTests(unittest.TestCase):
             self.assertIn("spec kit scripts", requirement_text)
             self.assertIn("evaluation", requirement_text)
             self.assertIn("spec-kit archive", requirement_text)
+            self.assertIn("explicit user approval", requirement_text)
+            self.assertIn("auto-send implementation handoffs", requirement_text)
             self.assertNotIn("mcp", requirement_text)
 
             for story in prd["user_stories"]:

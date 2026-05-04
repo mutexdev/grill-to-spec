@@ -8,6 +8,15 @@ description: Orchestrate the full Codex spec-driven chain from grill-me interrog
 Run a phase-gated workflow. Do not write product implementation code until the
 PRD, task artifacts, and eval report exist and the user approves implementation.
 
+## Planning Boundary
+
+The grill-to-spec workflow ends with reviewed planning artifacts: PRD.json,
+task artifacts, eval output, and a Spec-Kit handoff archive.
+
+Do not invoke implementation commands, auto-send an implementation handoff, edit
+product code, or mark downstream tasks complete unless the user explicitly asks
+for implementation after reviewing the generated artifacts.
+
 ## Inputs
 
 - Current conversation context, product research, or an explicit source file.
@@ -58,7 +67,10 @@ Write artifacts under `spec/` unless the user names another output directory:
 
 5. **Spec Kit Local Handoff**
    - Use the bundled `vendor/spec-kit/templates/commands/*.md` command templates
-     for specify, clarify, plan, tasks, analyze, checklist, and implement flows.
+     for specify, clarify, plan, tasks, analyze, and checklist flows.
+   - Treat `vendor/spec-kit/templates/commands/implement.md` as a downstream
+     reference only. It is not part of workflow completion and must not run
+     without a separate explicit user request.
    - Use the bundled `vendor/spec-kit/scripts/` shell or PowerShell helpers when
      a project needs the upstream Spec Kit file layout.
    - Keep the local `spec/` artifacts as the source of truth.
@@ -84,4 +96,5 @@ Write artifacts under `spec/` unless the user names another output directory:
 
 Do not call the workflow complete unless `PRD.json`, at least one task artifact file,
 task entries, `evals/evaluation.json`, and a Spec-Kit archive exist and
-validation passes.
+validation passes. Completion is a planning handoff, not authorization to edit
+product code.

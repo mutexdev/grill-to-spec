@@ -12,30 +12,14 @@
   "tasks": [
     {
       "id": "TASK-005",
-      "title": "Use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, ch",
-      "description": "Implement or verify the workflow behavior for REQ-005.",
+      "title": "Use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, an",
+      "description": "Plan or verify the workflow behavior for REQ-005 without executing downstream implementation.",
       "prd_refs": [
         "REQ-005",
         "AC-001"
       ],
       "acceptance_criteria": [
         "Given the plugin manifest, when Codex loads the plugin, then no server entry is registered or launched."
-      ],
-      "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spec.py",
-        "Run python3 scripts/grill_to_spec.py validate --output spec"
-      ]
-    },
-    {
-      "id": "TASK-011",
-      "title": "Do not require a network server for Spec Kit workflows; use bundled scripts and templates ",
-      "description": "Implement or verify the workflow behavior for REQ-011.",
-      "prd_refs": [
-        "REQ-011",
-        "AC-003"
-      ],
-      "acceptance_criteria": [
-        "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, and an eval report."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",

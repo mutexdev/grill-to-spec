@@ -26,7 +26,9 @@ phase-gated, spec-driven handoff. The workflow is local and artifact-first:
   scripts, schemas, eval rubrics, skills, and vendored Spec Kit assets under
   `plugins/grill-to-spec/`.
 - Do not write implementation code until PRD generation, task decomposition,
-  evaluation, and validation have passed.
+  evaluation, validation, and an explicit post-review user approval have passed.
+- Do not auto-send a Spec Kit implementation handoff from the tasks phase; the
+  intended end result is a PRD plus spec/task artifacts ready for review.
 
 ## Bundled Spec Kit Assets
 

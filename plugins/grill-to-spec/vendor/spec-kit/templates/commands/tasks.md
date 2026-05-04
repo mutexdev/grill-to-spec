@@ -5,10 +5,6 @@ handoffs:
     agent: speckit.analyze
     prompt: Run a project analysis for consistency
     send: true
-  - label: Implement Project
-    agent: speckit.implement
-    prompt: Start the implementation in phases
-    send: true
 scripts:
   sh: scripts/bash/setup-tasks.sh --json
   ps: scripts/powershell/setup-tasks.ps1 -Json
@@ -21,6 +17,13 @@ $ARGUMENTS
 ```
 
 You **MUST** consider the user input before proceeding (if not empty).
+
+## Planning Boundary
+
+Implementation is approval-gated. This command generates `tasks.md` and may
+recommend analysis, but it must not invoke implementation commands, send an
+implementation handoff, edit product code, or mark tasks complete. The user must
+explicitly request implementation in a later step before `implement.md` is used.
 
 ## Pre-Execution Checks
 

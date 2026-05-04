@@ -40,14 +40,16 @@ CANONICAL_GRILL_TO_SPEC_GOALS = [
     "Ask one question at a time during grilling and include the recommended answer.",
     "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
     "Create task artifacts that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
-    "Use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, checklist, and implement workflows.",
+    "Use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, and checklist workflows.",
+    "Require explicit user approval before any implementation command, code edit, or downstream task execution begins.",
     "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and Spec Kit asset readiness.",
     "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and vendored Spec Kit assets.",
 ]
 
 CANONICAL_GRILL_TO_SPEC_CONSTRAINTS = [
     "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals.",
-    "Do not proceed to implementation until PRD.json, task artifacts, and evaluation artifacts exist.",
+    "Do not proceed to implementation until PRD.json, task artifacts, evaluation artifacts, and explicit user approval exist.",
+    "Do not invoke implementation commands, auto-send implementation handoffs, edit product code, or mark downstream tasks complete during the grill-to-spec workflow.",
     "Use a dense forward-context summary between phases instead of relying on a long raw conversation transcript.",
     "Do not require a network server for Spec Kit workflows; use bundled scripts and templates from vendor/spec-kit.",
     "Keep archive generation dependency-free so users can share the evaluated handoff without extra setup.",
@@ -332,6 +334,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
         "goals": goals,
         "non_goals": [
             "Do not implement product code before the PRD, task artifacts, and quality gates exist.",
+            "Do not auto-send implementation handoffs or run Spec Kit implementation commands during planning handoff creation.",
             "Do not require a network server for local validation or Spec Kit handoff generation.",
             "Do not require third-party archive tooling beyond the Python standard library.",
         ],
@@ -349,6 +352,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
             "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
             "Represent task artifacts as vertical slices with task-level PRD references and blocker metadata.",
             "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and local Spec Kit assets.",
+            "Keep implementation execution as a separate approval-gated downstream step outside grill-to-spec completion.",
         ],
         "testing_decisions": [
             "Validate the generator with unit tests that read the emitted JSON artifacts.",
@@ -432,7 +436,7 @@ def build_task_artifacts(prd: dict[str, Any]) -> list[dict[str, Any]]:
             {
                 "id": f"TASK-{task_index:03d}",
                 "title": requirement["statement"][:90].rstrip("."),
-                "description": f"Implement or verify the workflow behavior for {requirement['id']}.",
+                "description": f"Plan or verify the workflow behavior for {requirement['id']} without executing downstream implementation.",
                 "prd_refs": [requirement["id"], *requirement.get("acceptance_criteria", [])],
                 "acceptance_criteria": criteria,
                 "verification": [
@@ -539,7 +543,7 @@ def evaluate_outputs(
     overall = round(sum(scores.values()) / len(scores), 3)
 
     risks = [
-        "Human approval is still required after the grill phase before implementation begins."
+        "Implementation remains approval-gated after PRD, task artifacts, eval, archive, and validation are complete."
     ]
     if prd_errors or task_artifact_errors:
         risks.extend(prd_errors + task_artifact_errors)
@@ -565,6 +569,7 @@ def evaluate_outputs(
         "risks": risks,
         "recommendations": [
             "Review HITL task artifacts before executing implementation tasks.",
+            "Treat any Spec Kit implement command as a separate downstream action that requires explicit user approval.",
             "Use the vendored Spec Kit command templates and scripts when producing agent-native spec handoffs.",
             "Create the Spec-Kit archive after eval so the shared handoff contains the latest score.",
         ],

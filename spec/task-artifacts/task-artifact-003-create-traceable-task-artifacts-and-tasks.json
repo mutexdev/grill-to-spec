@@ -6,18 +6,36 @@
   "blocked_by": [
     "TASKART-002"
   ],
-  "user_stories": [],
+  "user_stories": [
+    "US-006"
+  ],
   "tasks": [
     {
-      "id": "TASK-010",
-      "title": "Use a dense forward-context summary between phases instead of relying on a long raw conver",
-      "description": "Implement or verify the workflow behavior for REQ-010.",
+      "id": "TASK-006",
+      "title": "Require explicit user approval before any implementation command, code edit, or downstream",
+      "description": "Plan or verify the workflow behavior for REQ-006 without executing downstream implementation.",
       "prd_refs": [
-        "REQ-010",
+        "REQ-006",
         "AC-002"
       ],
       "acceptance_criteria": [
         "Given a marketplace install, when Codex copies `plugins/grill-to-spec/`, then the package includes skills, runtime scripts, schemas, eval rubric, and vendored Spec Kit assets."
+      ],
+      "verification": [
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
+      ]
+    },
+    {
+      "id": "TASK-012",
+      "title": "Use a dense forward-context summary between phases instead of relying on a long raw conver",
+      "description": "Plan or verify the workflow behavior for REQ-012 without executing downstream implementation.",
+      "prd_refs": [
+        "REQ-012",
+        "AC-004"
+      ],
+      "acceptance_criteria": [
+        "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",

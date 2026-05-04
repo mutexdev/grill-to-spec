@@ -13,6 +13,10 @@ phase-gated spec workflow:
 The generated artifacts from the included product research live under
 `spec/`.
 
+The workflow intentionally stops at the planning handoff. It does not auto-start
+Spec Kit implementation, edit product code, or mark generated tasks complete
+unless the user separately approves implementation after reviewing the artifacts.
+
 ## What Is Included
 
 - `.codex-plugin/plugin.json` - Codex plugin manifest.
@@ -81,6 +85,25 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
   --ref main \
   --path skills/grill-to-spec
 ```
+
+## Remove the Plugin
+
+To stop using the plugin, open `/plugins` in Codex and disable or uninstall
+**Grill to Spec**. Restart Codex after removing it so the active skill list is
+refreshed.
+
+If you also added this repository as a plugin marketplace source, remove that
+marketplace entry with the same name you used when adding it:
+
+```bash
+codex plugin marketplace remove mutexdev/grill-to-spec
+```
+
+For a local checkout marketplace entry, replace `mutexdev/grill-to-spec` with
+the configured local marketplace name shown by Codex.
+
+If you installed only a standalone skill with the skill installer, remove that
+skill from `~/.codex/skills/` and restart Codex.
 
 ## Local Usage
 

@@ -7,7 +7,7 @@
       "id": "TASKART-001",
       "title": "Grill and phase-gate discovery",
       "path": "task-artifact-001-grill-and-phase-gate-discovery.json",
-      "task_count": 3,
+      "task_count": 4,
       "blocked_by": []
     },
     {
@@ -23,7 +23,7 @@
       "id": "TASKART-003",
       "title": "Create traceable task artifacts and tasks",
       "path": "task-artifact-003-create-traceable-task-artifacts-and-tasks.json",
-      "task_count": 1,
+      "task_count": 2,
       "blocked_by": [
         "TASKART-002"
       ]
@@ -32,7 +32,7 @@
       "id": "TASKART-004",
       "title": "Evaluate and validate outputs",
       "path": "task-artifact-004-evaluate-and-validate-outputs.json",
-      "task_count": 4,
+      "task_count": 3,
       "blocked_by": [
         "TASKART-003"
       ]
@@ -41,7 +41,7 @@
       "id": "TASKART-005",
       "title": "Prepare Spec Kit local asset handoff",
       "path": "task-artifact-005-prepare-spec-kit-local-asset-handoff.json",
-      "task_count": 2,
+      "task_count": 1,
       "blocked_by": [
         "TASKART-004"
       ]
