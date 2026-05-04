@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
-  "id": "SPACK-003",
-  "title": "Create traceable spacks and tasks",
+  "id": "TASKART-003",
+  "title": "Create traceable task artifacts and tasks",
   "type": "AFK",
   "blocked_by": [
-    "SPACK-002"
+    "TASKART-002"
   ],
   "user_stories": [],
   "tasks": [
@@ -20,8 +20,8 @@
         "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     }
   ]

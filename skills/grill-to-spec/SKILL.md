@@ -1,12 +1,12 @@
 ---
-name: grill-to-spac
-description: Orchestrate the full Codex spec-driven chain from grill-me interrogation to PRD.json, spack task generation, Spec-Kit MCP handoff, and output evaluation. Use when the user asks to run grill-to-spac, grill-to-spec, create a PRD.json, create spacks/tasks, sync with Spec-Kit/Spac-Kit, or justify planning output quality.
+name: grill-to-spec
+description: Orchestrate the full Codex spec-driven chain from grill-me interrogation to PRD.json, task artifact generation, Spec-Kit MCP handoff, and output evaluation. Use when the user asks to run grill-to-spec, create a PRD.json, create task artifacts/tasks, sync with Spec-Kit, or justify planning output quality.
 ---
 
-# Grill to Spac
+# Grill to Spec
 
 Run a phase-gated workflow. Do not write product implementation code until the
-PRD, spacks, and eval report exist and the user approves implementation.
+PRD, task artifacts, and eval report exist and the user approves implementation.
 
 ## Inputs
 
@@ -17,13 +17,13 @@ PRD, spacks, and eval report exist and the user approves implementation.
 
 ## Required Artifacts
 
-Write artifacts under `spac/` unless the user names another output directory:
+Write artifacts under `spec/` unless the user names another output directory:
 
-- `spac/PRD.json`
-- `spac/spacks/index.json`
-- `spac/spacks/SPACK-*.json`
-- `spac/evals/evaluation.json`
-- `spac/archive/*-spec-kit-archive.zip`
+- `spec/PRD.json`
+- `spec/task-artifacts/index.json`
+- `spec/task-artifacts/TASKART-*.json`
+- `spec/evals/evaluation.json`
+- `spec/archive/*-spec-kit-archive.zip`
 
 ## Workflow
 
@@ -47,40 +47,40 @@ Write artifacts under `spac/` unless the user names another output directory:
    - Generate a machine-actionable JSON PRD with stable IDs for user stories,
      requirements, acceptance criteria, traceability, and quality gates.
    - Prefer the local deterministic generator for file output:
-     `python3 scripts/grill_to_spac.py generate --source <source> --output spac`.
+     `python3 scripts/grill_to_spec.py generate --source <source> --output spec`.
 
-4. **Create Spacks**
-   - Use `to-spac` behavior.
+4. **Create Task Artifacts**
+   - Use `to-spec` behavior.
    - Decompose the PRD into vertical slices, not horizontal implementation
      layers.
-   - Each spack must include tasks, blockers, HITL/AFK type, PRD references,
+   - Each task artifact must include tasks, blockers, HITL/AFK type, PRD references,
      acceptance criteria, and verification commands.
 
 5. **Spec-Kit MCP Handoff**
    - If the Spec-Kit MCP server is available, use its tools in this order:
      `speckit_init`, `speckit_specify`, `speckit_plan`, `speckit_tasks`,
      `speckit_analyze`, `speckit_checklist`.
-   - If MCP is unavailable, keep the local `spac/` artifacts as the source of
+   - If MCP is unavailable, keep the local `spec/` artifacts as the source of
      truth and state that fallback explicitly.
 
 6. **Evaluate**
-   - Use `evaluate-spac-output` behavior.
-   - Run `python3 scripts/grill_to_spac.py eval --output spac`.
+   - Use `evaluate-spec-output` behavior.
+   - Run `python3 scripts/grill_to_spec.py eval --output spec`.
    - Report the overall score and any risks before implementation starts.
 
 7. **Archive**
-   - Run `python3 scripts/grill_to_spac.py archive --output spac`.
-   - The archive must include `spac/evals/evaluation.json`,
+   - Run `python3 scripts/grill_to_spec.py archive --output spec`.
+   - The archive must include `spec/evals/evaluation.json`,
      `skills/grill-me/SKILL.md`, `.codex-plugin/plugin.json`, and `.mcp.json`.
    - Use the generated manifest as the shareable handoff inventory.
 
 8. **Verify**
-   - Run `python3 scripts/grill_to_spac.py validate --output spac`.
+   - Run `python3 scripts/grill_to_spec.py validate --output spec`.
    - Run the plugin tests if this repository contains them:
-     `python3 -m unittest tests/test_grill_to_spac.py`.
+     `python3 -m unittest tests/test_grill_to_spec.py`.
 
 ## Completion Rule
 
-Do not call the workflow complete unless `PRD.json`, at least one spack file,
+Do not call the workflow complete unless `PRD.json`, at least one task artifact file,
 task entries, `evals/evaluation.json`, and a Spec-Kit archive exist and
 validation passes.

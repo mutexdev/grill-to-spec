@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
   "project": {
-    "name": "grill-to-spac",
-    "slug": "grill-to-spac",
-    "generated_at": "2026-05-04T01:28:45.825671+00:00"
+    "name": "grill-to-spec",
+    "slug": "grill-to-spec",
+    "generated_at": "2026-05-04T02:46:40.514898+00:00"
   },
   "source": {
-    "path": "grill-to-spac.md",
+    "path": "grill-to-spec.md",
     "summary": "Architecting Spec-Driven Agentic Workflows: Implementing Compound Skill Chains in OpenAI CodexThe paradigm of artificial intelligence in software engineering has shifted precipitously from isolated, ad-hoc code generation toward orchestrated, autonomous, and highly deterministic execution frameworks. As large language models demonstrate the capability to generate hundreds of thousands of lines of production-ready infrastructure code within condensed timeframes, the primary bottleneck in the soft",
     "line_count": 1
   },
@@ -15,13 +15,13 @@
     "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation.",
     "Ask one question at a time during grilling and include the recommended answer.",
     "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
-    "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
+    "Create task artifacts that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
     "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
-    "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness.",
-    "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config."
+    "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness.",
+    "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config."
   ],
   "non_goals": [
-    "Do not implement product code before the PRD, spacks, and quality gates exist.",
+    "Do not implement product code before the PRD, task artifacts, and quality gates exist.",
     "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used.",
     "Do not require third-party archive tooling beyond the Python standard library."
   ],
@@ -67,7 +67,7 @@
     {
       "id": "US-004",
       "actor": "reviewer",
-      "story": "As a reviewer, I want the workflow to create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references, so that spec-driven work stays traceable.",
+      "story": "As a reviewer, I want the workflow to create task artifacts that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-004"
       ]
@@ -83,7 +83,7 @@
     {
       "id": "US-006",
       "actor": "Codex agent",
-      "story": "As a Codex agent, I want the workflow to generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness, so that spec-driven work stays traceable.",
+      "story": "As a Codex agent, I want the workflow to generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-006"
       ]
@@ -91,7 +91,7 @@
     {
       "id": "US-007",
       "actor": "engineering team",
-      "story": "As a engineering team, I want the workflow to create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config, so that spec-driven work stays traceable.",
+      "story": "As a engineering team, I want the workflow to create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-007"
       ]
@@ -141,7 +141,7 @@
     },
     {
       "id": "REQ-004",
-      "statement": "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
+      "statement": "Create task artifacts that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
       "priority": "must",
       "source_refs": [
         "source:4"
@@ -163,7 +163,7 @@
     },
     {
       "id": "REQ-006",
-      "statement": "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness.",
+      "statement": "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness.",
       "priority": "must",
       "source_refs": [
         "source:6"
@@ -174,7 +174,7 @@
     },
     {
       "id": "REQ-007",
-      "statement": "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config.",
+      "statement": "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config.",
       "priority": "must",
       "source_refs": [
         "source:7"
@@ -196,7 +196,7 @@
     },
     {
       "id": "REQ-009",
-      "statement": "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist.",
+      "statement": "Do not proceed to implementation until PRD.json, task artifacts, and evaluation artifacts exist.",
       "priority": "should",
       "source_refs": [
         "source:9"
@@ -246,7 +246,7 @@
     },
     {
       "id": "AC-002",
-      "statement": "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+      "statement": "Given PRD.json, when task decomposition runs, then task artifacts contain vertical-slice tasks with PRD references."
     },
     {
       "id": "AC-003",
@@ -254,10 +254,10 @@
     }
   ],
   "implementation_decisions": [
-    "Bundle grill-me, to-prd, to-spac, and evaluation as Codex skills in one plugin.",
+    "Bundle grill-me, to-prd, to-spec, and evaluation as Codex skills in one plugin.",
     "Keep the portable .mcp.json example and document that Codex MCP servers are configured in ~/.codex/config.toml.",
     "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
-    "Represent spacks as vertical slices with task-level PRD references and blocker metadata.",
+    "Represent task artifacts as vertical slices with task-level PRD references and blocker metadata.",
     "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and MCP metadata."
   ],
   "testing_decisions": [
@@ -370,8 +370,8 @@
     ],
     "artifact_contracts": [
       "PRD.json",
-      "spacks/index.json",
-      "spacks/SPACK-*.json",
+      "task-artifacts/index.json",
+      "task-artifacts/TASKART-*.json",
       "evals/evaluation.json",
       "archive/*-spec-kit-archive.zip"
     ]
@@ -384,7 +384,7 @@
     },
     {
       "id": "QG-002",
-      "name": "Every spack has tasks",
+      "name": "Every task artifact has tasks",
       "threshold": 1.0
     },
     {

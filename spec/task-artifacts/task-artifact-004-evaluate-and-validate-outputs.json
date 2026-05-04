@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
-  "id": "SPACK-004",
+  "id": "TASKART-004",
   "title": "Evaluate and validate outputs",
   "type": "AFK",
   "blocked_by": [
-    "SPACK-003"
+    "TASKART-003"
   ],
   "user_stories": [
     "US-006",
@@ -13,7 +13,7 @@
   "tasks": [
     {
       "id": "TASK-006",
-      "title": "Generate an evaluation report that scores PRD completeness, spack traceability, task actio",
+      "title": "Generate an evaluation report that scores PRD completeness, task artifact traceability, ta",
       "description": "Implement or verify the workflow behavior for REQ-006.",
       "prd_refs": [
         "REQ-006",
@@ -23,13 +23,13 @@
         "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     },
     {
       "id": "TASK-007",
-      "title": "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugi",
+      "title": "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skil",
       "description": "Implement or verify the workflow behavior for REQ-007.",
       "prd_refs": [
         "REQ-007",
@@ -39,13 +39,13 @@
         "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     },
     {
       "id": "TASK-009",
-      "title": "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist",
+      "title": "Do not proceed to implementation until PRD.json, task artifacts, and evaluation artifacts ",
       "description": "Implement or verify the workflow behavior for REQ-009.",
       "prd_refs": [
         "REQ-009",
@@ -55,8 +55,8 @@
         "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     },
     {
@@ -71,8 +71,8 @@
         "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     }
   ]

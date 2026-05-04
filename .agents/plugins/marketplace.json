@@ -5,10 +5,10 @@
   },
   "plugins": [
     {
-      "name": "grill-to-spac",
+      "name": "grill-to-spec",
       "source": {
         "source": "local",
-        "path": "."
+        "path": "./plugins/grill-to-spec"
       },
       "policy": {
         "installation": "AVAILABLE",

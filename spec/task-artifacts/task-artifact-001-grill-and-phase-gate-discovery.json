@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "id": "SPACK-001",
+  "id": "TASKART-001",
   "title": "Grill and phase-gate discovery",
   "type": "HITL",
   "blocked_by": [],
@@ -22,8 +22,8 @@
         "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     },
     {
@@ -35,11 +35,11 @@
         "AC-002"
       ],
       "acceptance_criteria": [
-        "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+        "Given PRD.json, when task decomposition runs, then task artifacts contain vertical-slice tasks with PRD references."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     },
     {
@@ -51,11 +51,11 @@
         "AC-002"
       ],
       "acceptance_criteria": [
-        "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references."
+        "Given PRD.json, when task decomposition runs, then task artifacts contain vertical-slice tasks with PRD references."
       ],
       "verification": [
-        "Run python3 -m unittest tests/test_grill_to_spac.py",
-        "Run python3 scripts/grill_to_spac.py validate --output spac"
+        "Run python3 -m unittest tests/test_grill_to_spec.py",
+        "Run python3 scripts/grill_to_spec.py validate --output spec"
       ]
     }
   ]

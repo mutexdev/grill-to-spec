@@ -5,33 +5,35 @@ phase-gated spec workflow:
 
 1. Grill the user one question at a time.
 2. Generate a machine-actionable `PRD.json`.
-3. Decompose the PRD into traceable spacks with tasks.
+3. Decompose the PRD into traceable task artifacts with tasks.
 4. Register Spec-Kit MCP for external spec/task tooling.
 5. Evaluate the generated outputs with a repeatable rubric.
 6. Save the evaluated handoff as a Spec-Kit archive that includes `grill-me`.
 
 The generated artifacts from the included product research live under
-`spac/`.
+`spec/`.
 
 ## What Is Included
 
 - `.codex-plugin/plugin.json` - Codex plugin manifest.
 - `.agents/plugins/marketplace.json` - Codex marketplace descriptor that
-  points at the root plugin.
+  points at the cacheable plugin package.
+- `plugins/grill-to-spec/` - installable plugin package used by Codex's plugin
+  cache.
 - `.mcp.json` - Spec-Kit MCP server registration.
 - `skills/` - bundled Codex skills:
-  - `grill-to-spac`
+  - `grill-to-spec`
   - `grill-me`
   - `to-prd`
-  - `to-spac`
-  - `evaluate-spac-output`
-- `scripts/grill_to_spac.py` - deterministic local generator, validator, and
+  - `to-spec`
+  - `evaluate-spec-output`
+- `scripts/grill_to_spec.py` - deterministic local generator, validator, and
   evaluator.
-- `schemas/` - JSON schema references for PRD and spack artifacts.
+- `schemas/` - JSON schema references for PRD and task artifacts.
 - `evals/rubric.json` - scoring rubric.
-- `tests/test_grill_to_spac.py` - regression tests for PRD, spack, and eval
+- `tests/test_grill_to_spec.py` - regression tests for PRD, task artifact, and eval
   output.
-- `spac/archive/` - generated Spec-Kit archives and archive manifests.
+- `spec/archive/` - generated Spec-Kit archives and archive manifests.
 
 ## Install From Main Branch
 
@@ -49,9 +51,9 @@ codex plugin marketplace add mutexdev/grill-to-spec --ref main
 
 This command expects a marketplace descriptor at
 `.agents/plugins/marketplace.json`; this repository includes one and maps the
-marketplace entry to the plugin manifest at `.codex-plugin/plugin.json`. Users
-do not need to clone this repository manually or edit local marketplace config
-by hand.
+marketplace entry to `plugins/grill-to-spec/`, the package layout Codex copies
+into its plugin cache. Users do not need to clone this repository manually or
+edit local marketplace config by hand.
 
 For a local checkout sanity check, run:
 
@@ -59,13 +61,13 @@ For a local checkout sanity check, run:
 codex plugin marketplace add /absolute/path/to/grill-to-spec
 ```
 
-Restart Codex, open `/plugins`, and install or enable **Grill to Spac** from
+Restart Codex, open `/plugins`, and install or enable **Grill to Spec** from
 the marketplace entry. Then start Codex in a workspace and use one of the
 plugin starter prompts:
 
 ```text
-Run grill-to-spac for this feature.
-Create PRD.json, spacks, and evals.
+Run grill-to-spec for this feature.
+Create PRD.json, task artifacts, and evals.
 Create a Spec-Kit archive with the eval report.
 ```
 
@@ -76,7 +78,7 @@ from the `main` branch with Codex's skill installer:
 python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
   --repo mutexdev/grill-to-spec \
   --ref main \
-  --path skills/grill-to-spac
+  --path skills/grill-to-spec
 ```
 
 ## Local Usage
@@ -84,39 +86,39 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 Generate artifacts from the included research file:
 
 ```bash
-python3 -B scripts/grill_to_spac.py generate \
-  --source grill-to-spac.md \
-  --output spac \
-  --project-name grill-to-spac
+python3 -B scripts/grill_to_spec.py generate \
+  --source grill-to-spec.md \
+  --output spec \
+  --project-name grill-to-spec
 ```
 
 Validate generated artifacts:
 
 ```bash
-python3 -B scripts/grill_to_spac.py validate --output spac
+python3 -B scripts/grill_to_spec.py validate --output spec
 ```
 
 Re-run the eval report:
 
 ```bash
-python3 -B scripts/grill_to_spac.py eval --output spac
+python3 -B scripts/grill_to_spec.py eval --output spec
 ```
 
 Create the shareable Spec-Kit archive:
 
 ```bash
-python3 -B scripts/grill_to_spac.py archive --output spac
+python3 -B scripts/grill_to_spec.py archive --output spec
 ```
 
-This refreshes `spac/evals/evaluation.json`, validates the artifacts, and writes
-`spac/archive/<project>-spec-kit-archive.zip` plus a JSON manifest. The archive
-contains the PRD, spacks, eval report, `grill-me` skill, plugin manifest, and
+This refreshes `spec/evals/evaluation.json`, validates the artifacts, and writes
+`spec/archive/<project>-spec-kit-archive.zip` plus a JSON manifest. The archive
+contains the PRD, task artifacts, eval report, `grill-me` skill, plugin manifest, and
 Spec-Kit MCP config.
 
 Run tests:
 
 ```bash
-python3 -B -m unittest tests/test_grill_to_spac.py
+python3 -B -m unittest tests/test_grill_to_spec.py
 ```
 
 ## Spec-Kit MCP
@@ -143,9 +145,9 @@ command = "npx"
 args = ["@speckit/mcp@latest"]
 ```
 
-When the MCP server is available, the `grill-to-spac` skill should prefer the
+When the MCP server is available, the `grill-to-spec` skill should prefer the
 Spec-Kit flow: init, specify, plan, tasks, analyze, and checklist. When MCP is
-not available, the local `spac/` JSON artifacts are the fallback source of
+not available, the local `spec/` JSON artifacts are the fallback source of
 truth.
 
 ## Verification Status
@@ -153,11 +155,11 @@ truth.
 Current local verification:
 
 ```text
-python3 -B -m unittest tests/test_grill_to_spac.py
-python3 -B scripts/grill_to_spac.py validate --output spac
+python3 -B -m unittest tests/test_grill_to_spec.py
+python3 -B scripts/grill_to_spec.py validate --output spec
 python3 -B -m json.tool .codex-plugin/plugin.json
 python3 -B -m json.tool .mcp.json
-python3 -B scripts/grill_to_spac.py archive --output spac
+python3 -B scripts/grill_to_spec.py archive --output spec
 ```
 
-The generated eval report is written to `spac/evals/evaluation.json`.
+The generated eval report is written to `spec/evals/evaluation.json`.

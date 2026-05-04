@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "archive_format": "spec-kit",
+  "project": "grill-to-spec",
+  "generated_at": "2026-05-04T02:46:50.740379+00:00",
+  "archive": "grill-to-spec-spec-kit-archive.zip",
+  "evaluation": "spec/evals/evaluation.json",
+  "overall_score": 1.0,
+  "entries": [
+    "README.md",
+    ".codex-plugin/plugin.json",
+    ".mcp.json",
+    "evals/rubric.json",
+    "scripts/__init__.py",
+    "scripts/grill_to_spec.py",
+    "schemas/prd.schema.json",
+    "schemas/task-artifact.schema.json",
+    "skills/evaluate-spec-output/SKILL.md",
+    "skills/grill-me/SKILL.md",
+    "skills/grill-to-spec/SKILL.md",
+    "skills/to-prd/SKILL.md",
+    "skills/to-spec/SKILL.md",
+    "spec/PRD.json",
+    "spec/evals/evaluation.json",
+    "spec/task-artifacts/index.json",
+    "spec/task-artifacts/task-artifact-001-grill-and-phase-gate-discovery.json",
+    "spec/task-artifacts/task-artifact-002-generate-machine-actionable-prd.json",
+    "spec/task-artifacts/task-artifact-003-create-traceable-task-artifacts-and-tasks.json",
+    "spec/task-artifacts/task-artifact-004-evaluate-and-validate-outputs.json",
+    "spec/task-artifacts/task-artifact-005-prepare-spec-kit-mcp-handoff.json",
+    "archive-manifest.json"
+  ]
+}

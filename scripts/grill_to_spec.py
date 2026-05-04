@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate and evaluate PRD.json and spack task artifacts.
+"""Generate and evaluate PRD.json and task artifacts.
 
 The plugin skills are conversational, but this script keeps the artifact format
 deterministic so tests and evals can verify the workflow without an MCP server.
@@ -35,19 +35,19 @@ REQUIRED_PRD_KEYS = [
     "quality_gates",
 ]
 
-CANONICAL_GRILL_TO_SPAC_GOALS = [
+CANONICAL_GRILL_TO_SPEC_GOALS = [
     "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation.",
     "Ask one question at a time during grilling and include the recommended answer.",
     "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
-    "Create spacks that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
+    "Create task artifacts that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
     "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
-    "Generate an evaluation report that scores PRD completeness, spack traceability, task actionability, testability, and MCP readiness.",
-    "Create a Spec-Kit archive that bundles the eval report, PRD, spacks, grill-me skill, plugin manifest, and MCP config.",
+    "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness.",
+    "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config.",
 ]
 
-CANONICAL_GRILL_TO_SPAC_CONSTRAINTS = [
+CANONICAL_GRILL_TO_SPEC_CONSTRAINTS = [
     "Run best in Codex interactive mode because the grill phase requires human-in-the-loop answers and approvals.",
-    "Do not proceed to implementation until PRD.json, spacks, and evaluation artifacts exist.",
+    "Do not proceed to implementation until PRD.json, task artifacts, and evaluation artifacts exist.",
     "Use a dense forward-context summary between phases instead of relying on a long raw conversation transcript.",
     "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reachable.",
     "Keep archive generation dependency-free so users can share the evaluated handoff without extra setup.",
@@ -57,15 +57,15 @@ CANONICAL_GRILL_TO_SPAC_CONSTRAINTS = [
 @dataclass(frozen=True)
 class ArtifactPaths:
     prd: Path
-    spacks: list[Path]
-    spack_index: Path
+    task_artifacts: list[Path]
+    task_artifact_index: Path
     evaluation: Path
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "prd": self.prd,
-            "spacks": self.spacks,
-            "spack_index": self.spack_index,
+            "task_artifacts": self.task_artifacts,
+            "task_artifact_index": self.task_artifact_index,
             "evaluation": self.evaluation,
         }
 
@@ -125,12 +125,12 @@ def dedupe(items: list[str]) -> list[str]:
     return output
 
 
-def is_grill_to_spac_source(source_text: str) -> bool:
+def is_grill_to_spec_source(source_text: str) -> bool:
     lowered = source_text.lower()
     has_grill = "grill-me" in lowered or "grill me" in lowered
     has_prd = "to-prd" in lowered or "prd.json" in lowered or "product requirements document" in lowered
-    has_spac = "spac" in lowered or "spec-kit" in lowered or "spack" in lowered
-    return has_grill and has_prd and has_spac
+    has_spec = "spec" in lowered or "spec-kit" in lowered or "task artifact" in lowered or "task_artifact" in lowered
+    return has_grill and has_prd and has_spec
 
 
 def derive_project_name(source_text: str, project_name: str | None) -> str:
@@ -140,12 +140,12 @@ def derive_project_name(source_text: str, project_name: str | None) -> str:
         match = re.match(r"^\s{0,3}#\s+(.+?)\s*$", line)
         if match:
             return clean_text(match.group(1))
-    return "Grill to Spac Workflow"
+    return "Grill to Spec Workflow"
 
 
 def derive_goals(sections: dict[str, str], source_text: str) -> list[str]:
-    if is_grill_to_spac_source(source_text):
-        return CANONICAL_GRILL_TO_SPAC_GOALS
+    if is_grill_to_spec_source(source_text):
+        return CANONICAL_GRILL_TO_SPEC_GOALS
 
     goals = extract_bullets(find_section(sections, "goal", "objective"))
     if goals:
@@ -159,14 +159,14 @@ def derive_goals(sections: dict[str, str], source_text: str) -> list[str]:
     return dedupe(goalish[:7]) or [
         "Interview the user until the product and engineering intent is clear.",
         "Create a machine-actionable PRD.json artifact.",
-        "Create traceable spacks with implementation tasks.",
+        "Create traceable task artifacts with implementation tasks.",
         "Evaluate output quality with a repeatable rubric.",
     ]
 
 
 def derive_constraints(sections: dict[str, str], source_text: str) -> list[str]:
-    if is_grill_to_spac_source(source_text):
-        return CANONICAL_GRILL_TO_SPAC_CONSTRAINTS
+    if is_grill_to_spec_source(source_text):
+        return CANONICAL_GRILL_TO_SPEC_CONSTRAINTS
 
     constraints = extract_bullets(find_section(sections, "constraint", "non-functional", "guardrail"))
     if constraints:
@@ -185,7 +185,7 @@ def derive_acceptance_criteria(sections: dict[str, str], goals: list[str]) -> li
     if not raw:
         raw = [
             "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria.",
-            "Given PRD.json, when task decomposition runs, then spacks contain vertical-slice tasks with PRD references.",
+            "Given PRD.json, when task decomposition runs, then task artifacts contain vertical-slice tasks with PRD references.",
             "Given generated artifacts, when evaluation runs, then scores and findings justify output quality.",
         ]
 
@@ -276,7 +276,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
         "schema_version": "1.0",
         "project": {
             "name": name,
-            "slug": slugify(name, "grill-to-spac"),
+            "slug": slugify(name, "grill-to-spec"),
             "generated_at": datetime.now(timezone.utc).isoformat(),
         },
         "source": {
@@ -287,7 +287,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
         "problem_statement": problem,
         "goals": goals,
         "non_goals": [
-            "Do not implement product code before the PRD, spacks, and quality gates exist.",
+            "Do not implement product code before the PRD, task artifacts, and quality gates exist.",
             "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used.",
             "Do not require third-party archive tooling beyond the Python standard library.",
         ],
@@ -300,10 +300,10 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
         "requirements": requirements,
         "acceptance_criteria": acceptance,
         "implementation_decisions": [
-            "Bundle grill-me, to-prd, to-spac, and evaluation as Codex skills in one plugin.",
+            "Bundle grill-me, to-prd, to-spec, and evaluation as Codex skills in one plugin.",
             "Keep the portable .mcp.json example and document that Codex MCP servers are configured in ~/.codex/config.toml.",
             "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
-            "Represent spacks as vertical slices with task-level PRD references and blocker metadata.",
+            "Represent task artifacts as vertical slices with task-level PRD references and blocker metadata.",
             "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and MCP metadata.",
         ],
         "testing_decisions": [
@@ -315,15 +315,15 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
             "requirement_coverage": requirement_coverage,
             "artifact_contracts": [
                 "PRD.json",
-                "spacks/index.json",
-                "spacks/SPACK-*.json",
+                "task-artifacts/index.json",
+                "task-artifacts/TASKART-*.json",
                 "evals/evaluation.json",
                 "archive/*-spec-kit-archive.zip",
             ],
         },
         "quality_gates": [
             {"id": "QG-001", "name": "PRD schema completeness", "threshold": 1.0},
-            {"id": "QG-002", "name": "Every spack has tasks", "threshold": 1.0},
+            {"id": "QG-002", "name": "Every task artifact has tasks", "threshold": 1.0},
             {"id": "QG-003", "name": "Every task has PRD references", "threshold": 1.0},
             {"id": "QG-004", "name": "Overall eval score", "threshold": 0.75},
             {"id": "QG-005", "name": "Archive contains eval and grill-me", "threshold": 1.0},
@@ -331,26 +331,26 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
     }
 
 
-def spack_category(requirement: dict[str, Any]) -> tuple[str, str, str]:
+def task_artifact_category(requirement: dict[str, Any]) -> tuple[str, str, str]:
     text = requirement["statement"].lower()
 
     def has_terms(*terms: str) -> bool:
         return any(re.search(rf"\b{re.escape(term)}\b", text) for term in terms)
 
     if has_terms("evaluation", "evaluate", "eval", "evals", "score", "scores", "quality", "archive", "bundles", "share"):
-        return ("SPACK-004", "Evaluate and validate outputs", "AFK")
+        return ("TASKART-004", "Evaluate and validate outputs", "AFK")
     if has_terms("question", "interview", "grill", "grilling", "ask", "phase-gated", "interactive"):
-        return ("SPACK-001", "Grill and phase-gate discovery", "HITL")
-    if has_terms("mcp", "spec-kit", "spac-kit"):
-        return ("SPACK-005", "Prepare Spec-Kit MCP handoff", "AFK")
+        return ("TASKART-001", "Grill and phase-gate discovery", "HITL")
+    if has_terms("mcp", "spec-kit", "spec-kit"):
+        return ("TASKART-005", "Prepare Spec-Kit MCP handoff", "AFK")
     if has_terms("prd", "prd.json", "requirement", "requirements", "story", "stories", "acceptance"):
-        return ("SPACK-002", "Generate machine-actionable PRD", "AFK")
-    if has_terms("spack", "spacks", "task", "tasks", "decompose", "blocker", "blockers", "slice", "slices"):
-        return ("SPACK-003", "Create traceable spacks and tasks", "AFK")
-    return ("SPACK-003", "Create traceable spacks and tasks", "AFK")
+        return ("TASKART-002", "Generate machine-actionable PRD", "AFK")
+    if has_terms("task artifact", "task artifacts", "task_artifact", "task_artifacts", "task", "tasks", "decompose", "blocker", "blockers", "slice", "slices"):
+        return ("TASKART-003", "Create traceable task artifacts and tasks", "AFK")
+    return ("TASKART-003", "Create traceable task artifacts and tasks", "AFK")
 
 
-def build_spacks(prd: dict[str, Any]) -> list[dict[str, Any]]:
+def build_task_artifacts(prd: dict[str, Any]) -> list[dict[str, Any]]:
     grouped: dict[str, dict[str, Any]] = {}
     task_index = 1
     stories_by_requirement = {
@@ -361,22 +361,22 @@ def build_spacks(prd: dict[str, Any]) -> list[dict[str, Any]]:
     criteria_by_id = {item["id"]: item["statement"] for item in prd["acceptance_criteria"]}
 
     for requirement in prd["requirements"]:
-        spack_id, title, spack_type = spack_category(requirement)
+        task_artifact_id, title, task_artifact_type = task_artifact_category(requirement)
         grouped.setdefault(
-            spack_id,
+            task_artifact_id,
             {
                 "schema_version": "1.0",
-                "id": spack_id,
+                "id": task_artifact_id,
                 "title": title,
-                "type": spack_type,
+                "type": task_artifact_type,
                 "blocked_by": [],
                 "user_stories": [],
                 "tasks": [],
             },
         )
         story_id = stories_by_requirement.get(requirement["id"])
-        if story_id and story_id not in grouped[spack_id]["user_stories"]:
-            grouped[spack_id]["user_stories"].append(story_id)
+        if story_id and story_id not in grouped[task_artifact_id]["user_stories"]:
+            grouped[task_artifact_id]["user_stories"].append(story_id)
 
         criteria = [
             criteria_by_id[criteria_id]
@@ -384,7 +384,7 @@ def build_spacks(prd: dict[str, Any]) -> list[dict[str, Any]]:
             if criteria_id in criteria_by_id
         ] or ["Generated artifact satisfies the linked PRD requirement."]
 
-        grouped[spack_id]["tasks"].append(
+        grouped[task_artifact_id]["tasks"].append(
             {
                 "id": f"TASK-{task_index:03d}",
                 "title": requirement["statement"][:90].rstrip("."),
@@ -392,21 +392,21 @@ def build_spacks(prd: dict[str, Any]) -> list[dict[str, Any]]:
                 "prd_refs": [requirement["id"], *requirement.get("acceptance_criteria", [])],
                 "acceptance_criteria": criteria,
                 "verification": [
-                    "Run python3 -m unittest tests/test_grill_to_spac.py",
-                    "Run python3 scripts/grill_to_spac.py validate --output spac",
+                    "Run python3 -m unittest tests/test_grill_to_spec.py",
+                    "Run python3 scripts/grill_to_spec.py validate --output spec",
                 ],
             }
         )
         task_index += 1
 
-    spacks = [grouped[key] for key in sorted(grouped)]
-    existing_ids = {item["id"] for item in spacks}
-    dependency_order = ["SPACK-001", "SPACK-002", "SPACK-003", "SPACK-004", "SPACK-005"]
-    for spack in spacks:
-        position = dependency_order.index(spack["id"]) if spack["id"] in dependency_order else 0
+    task_artifacts = [grouped[key] for key in sorted(grouped)]
+    existing_ids = {item["id"] for item in task_artifacts}
+    dependency_order = ["TASKART-001", "TASKART-002", "TASKART-003", "TASKART-004", "TASKART-005"]
+    for task_artifact in task_artifacts:
+        position = dependency_order.index(task_artifact["id"]) if task_artifact["id"] in dependency_order else 0
         blockers = [candidate for candidate in dependency_order[:position] if candidate in existing_ids]
-        spack["blocked_by"] = blockers[-1:] if blockers else []
-    return spacks
+        task_artifact["blocked_by"] = blockers[-1:] if blockers else []
+    return task_artifacts
 
 
 def validate_prd(prd: dict[str, Any]) -> list[str]:
@@ -427,17 +427,17 @@ def validate_prd(prd: dict[str, Any]) -> list[str]:
     return errors
 
 
-def validate_spacks(spacks: list[dict[str, Any]], prd: dict[str, Any]) -> list[str]:
+def validate_task_artifacts(task_artifacts: list[dict[str, Any]], prd: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     prd_refs = {item["id"] for item in prd.get("requirements", [])}
     prd_refs.update(item["id"] for item in prd.get("acceptance_criteria", []))
     task_ids: set[str] = set()
     covered_requirements: set[str] = set()
 
-    for spack in spacks:
-        if not spack.get("tasks"):
-            errors.append(f"{spack.get('id', '<unknown>')} has no tasks")
-        for task in spack.get("tasks", []):
+    for task_artifact in task_artifacts:
+        if not task_artifact.get("tasks"):
+            errors.append(f"{task_artifact.get('id', '<unknown>')} has no tasks")
+        for task in task_artifact.get("tasks", []):
             task_id = task.get("id")
             if task_id in task_ids:
                 errors.append(f"Duplicate task id: {task_id}")
@@ -454,7 +454,7 @@ def validate_spacks(spacks: list[dict[str, Any]], prd: dict[str, Any]) -> list[s
     expected_requirements = {item["id"] for item in prd.get("requirements", [])}
     if expected_requirements and covered_requirements != expected_requirements:
         missing = ", ".join(sorted(expected_requirements - covered_requirements))
-        errors.append(f"Spacks do not cover every requirement: {missing}")
+        errors.append(f"Task artifacts do not cover every requirement: {missing}")
     return errors
 
 
@@ -464,14 +464,14 @@ def score_fraction(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 3)
 
 
-def evaluate_outputs(prd: dict[str, Any], spacks: list[dict[str, Any]], mcp_config_path: Path | None = None) -> dict[str, Any]:
+def evaluate_outputs(prd: dict[str, Any], task_artifacts: list[dict[str, Any]], mcp_config_path: Path | None = None) -> dict[str, Any]:
     prd_errors = validate_prd(prd)
-    spack_errors = validate_spacks(spacks, prd)
-    tasks = [task for spack in spacks for task in spack.get("tasks", [])]
+    task_artifact_errors = validate_task_artifacts(task_artifacts, prd)
+    tasks = [task for task_artifact in task_artifacts for task in task_artifact.get("tasks", [])]
     complete_prd_keys = sum(1 for key in REQUIRED_PRD_KEYS if prd.get(key))
     tasks_with_refs = sum(1 for task in tasks if task.get("prd_refs"))
     tasks_with_criteria = sum(1 for task in tasks if task.get("acceptance_criteria"))
-    spacks_with_tasks = sum(1 for spack in spacks if spack.get("tasks"))
+    task_artifacts_with_tasks = sum(1 for task_artifact in task_artifacts if task_artifact.get("tasks"))
     requirements = prd.get("requirements", [])
     requirements_with_criteria = sum(1 for item in requirements if item.get("acceptance_criteria"))
     testing_decision_score = min(1.0, len(prd.get("testing_decisions", [])) / 3)
@@ -480,7 +480,7 @@ def evaluate_outputs(prd: dict[str, Any], spacks: list[dict[str, Any]], mcp_conf
 
     scores = {
         "prd_completeness": score_fraction(complete_prd_keys, len(REQUIRED_PRD_KEYS)),
-        "spack_traceability": score_fraction(tasks_with_refs + spacks_with_tasks, len(tasks) + len(spacks)),
+        "task_artifact_traceability": score_fraction(tasks_with_refs + task_artifacts_with_tasks, len(tasks) + len(task_artifacts)),
         "task_actionability": score_fraction(tasks_with_criteria, len(tasks)),
         "testability": round((requirement_testability * 0.7) + (testing_decision_score * 0.3), 3),
         "mcp_readiness": 1.0 if mcp_config_path.exists() else 0.75,
@@ -490,8 +490,8 @@ def evaluate_outputs(prd: dict[str, Any], spacks: list[dict[str, Any]], mcp_conf
     risks = [
         "Human approval is still required after the grill phase before implementation begins."
     ]
-    if prd_errors or spack_errors:
-        risks.extend(prd_errors + spack_errors)
+    if prd_errors or task_artifact_errors:
+        risks.extend(prd_errors + task_artifact_errors)
     else:
         risks.append("Spec-Kit MCP availability is environment-dependent; local artifacts are the fallback.")
 
@@ -501,12 +501,12 @@ def evaluate_outputs(prd: dict[str, Any], spacks: list[dict[str, Any]], mcp_conf
         "overall_score": overall,
         "scores": scores,
         "strengths": [
-            "PRD requirements, acceptance criteria, and spack tasks share stable IDs.",
-            "Spacks are vertical slices with task-level verification commands.",
+            "PRD requirements, acceptance criteria, and task artifact tasks share stable IDs.",
+            "Task artifacts are vertical slices with task-level verification commands.",
         ],
         "risks": risks,
         "recommendations": [
-            "Review HITL spacks before executing implementation tasks.",
+            "Review HITL task artifacts before executing implementation tasks.",
             "Run Spec-Kit analyze/checklist tools when MCP is available to compare against local validation.",
             "Create the Spec-Kit archive after eval so the shared handoff contains the latest score.",
         ],
@@ -531,7 +531,7 @@ def collect_archive_entries(output_dir: Path) -> list[tuple[Path, str]]:
         archive_entry(ROOT / ".mcp.json", ".mcp.json"),
         archive_entry(ROOT / "evals" / "rubric.json", "evals/rubric.json"),
         archive_entry(ROOT / "scripts" / "__init__.py", "scripts/__init__.py"),
-        archive_entry(ROOT / "scripts" / "grill_to_spac.py", "scripts/grill_to_spac.py"),
+        archive_entry(ROOT / "scripts" / "grill_to_spec.py", "scripts/grill_to_spec.py"),
     ]
 
     for directory in ["schemas", "skills"]:
@@ -543,18 +543,18 @@ def collect_archive_entries(output_dir: Path) -> list[tuple[Path, str]]:
         relative = path.relative_to(output_dir)
         if "archive" in relative.parts:
             continue
-        entries.append(archive_entry(path, f"spac/{relative.as_posix()}"))
+        entries.append(archive_entry(path, f"spec/{relative.as_posix()}"))
 
     return entries
 
 
 def create_archive(
-    output_dir: Path | str = "spac",
+    output_dir: Path | str = "spec",
     archive_dir: Path | str | None = None,
 ) -> dict[str, Any]:
     output = Path(output_dir)
-    prd, spacks = load_generated(output)
-    evaluation = evaluate_outputs(prd, spacks)
+    prd, task_artifacts = load_generated(output)
+    evaluation = evaluate_outputs(prd, task_artifacts)
     eval_path = output / "evals" / "evaluation.json"
     write_json(eval_path, evaluation)
 
@@ -565,7 +565,7 @@ def create_archive(
     project_name = prd["project"]["name"]
     archive_output = Path(archive_dir) if archive_dir is not None else output / "archive"
     archive_output.mkdir(parents=True, exist_ok=True)
-    archive_stem = f"{slugify(project_name, 'grill-to-spac')}-spec-kit-archive"
+    archive_stem = f"{slugify(project_name, 'grill-to-spec')}-spec-kit-archive"
     archive_path = archive_output / f"{archive_stem}.zip"
     manifest_path = archive_output / f"{archive_stem}-manifest.json"
     entries = collect_archive_entries(output)
@@ -578,7 +578,7 @@ def create_archive(
         "project": project_name,
         "generated_at": evaluation["generated_at"],
         "archive": archive_path.name,
-        "evaluation": "spac/evals/evaluation.json",
+        "evaluation": "spec/evals/evaluation.json",
         "overall_score": evaluation["overall_score"],
         "entries": entry_names,
     }
@@ -609,77 +609,78 @@ def generate_artifacts(
 ) -> dict[str, Any]:
     output = Path(output_dir)
     prd = build_prd(source_text, project_name=project_name, source_path=source_path)
-    spacks = build_spacks(prd)
-    evaluation = evaluate_outputs(prd, spacks)
+    task_artifacts = build_task_artifacts(prd)
+    evaluation = evaluate_outputs(prd, task_artifacts)
 
     prd_path = output / "PRD.json"
-    spacks_dir = output / "spacks"
+    task_artifacts_dir = output / "task-artifacts"
     eval_path = output / "evals" / "evaluation.json"
     write_json(prd_path, prd)
 
-    spack_paths: list[Path] = []
-    for spack in spacks:
-        file_name = f"{spack['id'].lower()}-{slugify(spack['title'])}.json"
-        path = spacks_dir / file_name
-        write_json(path, spack)
-        spack_paths.append(path)
+    task_artifact_paths: list[Path] = []
+    for task_artifact in task_artifacts:
+        artifact_number = task_artifact["id"].split("-")[-1].lower()
+        file_name = f"task-artifact-{artifact_number}-{slugify(task_artifact['title'])}.json"
+        path = task_artifacts_dir / file_name
+        write_json(path, task_artifact)
+        task_artifact_paths.append(path)
 
     index = {
         "schema_version": "1.0",
         "project": prd["project"]["name"],
         "prd": "../PRD.json",
-        "spacks": [
+        "task_artifacts": [
             {
-                "id": spack["id"],
-                "title": spack["title"],
+                "id": task_artifact["id"],
+                "title": task_artifact["title"],
                 "path": path.name,
-                "task_count": len(spack["tasks"]),
-                "blocked_by": spack["blocked_by"],
+                "task_count": len(task_artifact["tasks"]),
+                "blocked_by": task_artifact["blocked_by"],
             }
-            for spack, path in zip(spacks, spack_paths)
+            for task_artifact, path in zip(task_artifacts, task_artifact_paths)
         ],
-        "task_count": sum(len(spack["tasks"]) for spack in spacks),
+        "task_count": sum(len(task_artifact["tasks"]) for task_artifact in task_artifacts),
     }
-    index_path = spacks_dir / "index.json"
+    index_path = task_artifacts_dir / "index.json"
     write_json(index_path, index)
     write_json(eval_path, evaluation)
 
     return ArtifactPaths(
         prd=prd_path,
-        spacks=spack_paths,
-        spack_index=index_path,
+        task_artifacts=task_artifact_paths,
+        task_artifact_index=index_path,
         evaluation=eval_path,
     ).as_dict()
 
 
 def load_generated(output_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     prd_path = output_dir / "PRD.json"
-    spacks_dir = output_dir / "spacks"
+    task_artifacts_dir = output_dir / "task-artifacts"
     prd = json.loads(prd_path.read_text())
-    spacks = [
+    task_artifacts = [
         json.loads(path.read_text())
-        for path in sorted(spacks_dir.glob("SPACK-*.json"))
+        for path in sorted(task_artifacts_dir.glob("TASKART-*.json"))
     ]
-    if not spacks:
-        spacks = [
+    if not task_artifacts:
+        task_artifacts = [
             json.loads(path.read_text())
-            for path in sorted(spacks_dir.glob("spack-*.json"))
+            for path in sorted(task_artifacts_dir.glob("task-artifact-*.json"))
             if path.name != "index.json"
         ]
-    return prd, spacks
+    return prd, task_artifacts
 
 
 def validate_output_dir(output_dir: Path) -> list[str]:
     errors: list[str] = []
     if not (output_dir / "PRD.json").exists():
         return ["Missing PRD.json"]
-    if not (output_dir / "spacks").exists():
-        return ["Missing spacks directory"]
-    prd, spacks = load_generated(output_dir)
+    if not (output_dir / "task-artifacts").exists():
+        return ["Missing task-artifacts directory"]
+    prd, task_artifacts = load_generated(output_dir)
     errors.extend(validate_prd(prd))
-    errors.extend(validate_spacks(spacks, prd))
-    if not (output_dir / "spacks" / "index.json").exists():
-        errors.append("Missing spacks/index.json")
+    errors.extend(validate_task_artifacts(task_artifacts, prd))
+    if not (output_dir / "task-artifacts" / "index.json").exists():
+        errors.append("Missing task-artifacts/index.json")
     if not (output_dir / "evals" / "evaluation.json").exists():
         errors.append("Missing evals/evaluation.json")
     return errors
@@ -713,8 +714,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 def cmd_eval(args: argparse.Namespace) -> int:
     output_dir = Path(args.output)
-    prd, spacks = load_generated(output_dir)
-    report = evaluate_outputs(prd, spacks)
+    prd, task_artifacts = load_generated(output_dir)
+    report = evaluate_outputs(prd, task_artifacts)
     eval_path = output_dir / "evals" / "evaluation.json"
     write_json(eval_path, report)
     print(json.dumps(report, indent=2))
@@ -741,25 +742,25 @@ def cmd_archive(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Generate and validate grill-to-spac artifacts.")
+    parser = argparse.ArgumentParser(description="Generate and validate grill-to-spec artifacts.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    generate = subparsers.add_parser("generate", help="Generate PRD.json, spacks, and eval report.")
+    generate = subparsers.add_parser("generate", help="Generate PRD.json, task artifacts, and eval report.")
     generate.add_argument("--source", required=True, help="Source research, grill summary, or PRD markdown.")
-    generate.add_argument("--output", default="spac", help="Artifact output directory.")
+    generate.add_argument("--output", default="spec", help="Artifact output directory.")
     generate.add_argument("--project-name", help="Override project name.")
     generate.set_defaults(func=cmd_generate)
 
     validate = subparsers.add_parser("validate", help="Validate generated artifacts.")
-    validate.add_argument("--output", default="spac", help="Artifact output directory.")
+    validate.add_argument("--output", default="spec", help="Artifact output directory.")
     validate.set_defaults(func=cmd_validate)
 
     evaluate = subparsers.add_parser("eval", help="Re-run the artifact quality eval.")
-    evaluate.add_argument("--output", default="spac", help="Artifact output directory.")
+    evaluate.add_argument("--output", default="spec", help="Artifact output directory.")
     evaluate.set_defaults(func=cmd_eval)
 
     archive = subparsers.add_parser("archive", help="Create a Spec-Kit archive with evals and plugin assets.")
-    archive.add_argument("--output", default="spac", help="Artifact output directory.")
+    archive.add_argument("--output", default="spec", help="Artifact output directory.")
     archive.add_argument("--archive-dir", help="Archive output directory. Defaults to <output>/archive.")
     archive.set_defaults(func=cmd_archive)
 

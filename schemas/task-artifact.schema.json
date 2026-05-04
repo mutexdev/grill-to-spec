@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/grill-to-spac/spack.schema.json",
-  "title": "Grill to Spac Spack",
+  "$id": "https://example.com/grill-to-spec/task-artifact.schema.json",
+  "title": "Grill to Spec Task Artifact",
   "type": "object",
   "required": [
     "schema_version",
@@ -18,7 +18,7 @@
     },
     "id": {
       "type": "string",
-      "pattern": "^SPACK-[0-9]{3}$"
+      "pattern": "^TASKART-[0-9]{3}$"
     },
     "type": {
       "enum": [

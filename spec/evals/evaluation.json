@@ -1,24 +1,24 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-04T01:28:48.391340+00:00",
+  "generated_at": "2026-05-04T02:46:50.740379+00:00",
   "overall_score": 1.0,
   "scores": {
     "prd_completeness": 1.0,
-    "spack_traceability": 1.0,
+    "task_artifact_traceability": 1.0,
     "task_actionability": 1.0,
     "testability": 1.0,
     "mcp_readiness": 1.0
   },
   "strengths": [
-    "PRD requirements, acceptance criteria, and spack tasks share stable IDs.",
-    "Spacks are vertical slices with task-level verification commands."
+    "PRD requirements, acceptance criteria, and task artifact tasks share stable IDs.",
+    "Task artifacts are vertical slices with task-level verification commands."
   ],
   "risks": [
     "Human approval is still required after the grill phase before implementation begins.",
     "Spec-Kit MCP availability is environment-dependent; local artifacts are the fallback."
   ],
   "recommendations": [
-    "Review HITL spacks before executing implementation tasks.",
+    "Review HITL task artifacts before executing implementation tasks.",
     "Run Spec-Kit analyze/checklist tools when MCP is available to compare against local validation.",
     "Create the Spec-Kit archive after eval so the shared handoff contains the latest score."
   ]

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "spec-kit": {
+      "command": "npx",
+      "args": [
+        "@speckit/mcp@latest"
+      ]
+    }
+  }
+}

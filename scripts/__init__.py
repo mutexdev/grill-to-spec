@@ -1,1 +1,1 @@
-"""Utility scripts bundled with the grill-to-spac Codex plugin."""
+"""Utility scripts bundled with the grill-to-spec Codex plugin."""

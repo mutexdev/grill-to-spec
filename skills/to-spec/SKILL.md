@@ -1,18 +1,18 @@
 ---
-name: to-spac
-description: Break PRD.json into traceable spacks with vertical-slice tasks, blockers, HITL/AFK classification, acceptance criteria, verification commands, and PRD references. Use when the user asks to create spacks, tasks, issues, or Spec-Kit/Spac-Kit work items from a PRD.
+name: to-spec
+description: Break PRD.json into traceable task artifacts with vertical-slice tasks, blockers, HITL/AFK classification, acceptance criteria, verification commands, and PRD references. Use when the user asks to create task artifacts, tasks, issues, or Spec-Kit work items from a PRD.
 ---
 
-# To Spac
+# To Spec
 
-Convert PRD requirements into independently executable spacks.
+Convert PRD requirements into independently executable task artifacts.
 
-## Spack Rules
+## Task Artifact Rules
 
 - Use vertical slices that deliver a narrow end-to-end behavior.
 - Avoid horizontal slices such as "database only" or "frontend only".
-- Mark a spack `HITL` when it requires a human decision or approval.
-- Mark a spack `AFK` when an agent can execute it from the PRD and tests.
+- Mark a task artifact `HITL` when it requires a human decision or approval.
+- Mark a task artifact `AFK` when an agent can execute it from the PRD and tests.
 - Publish blockers in dependency order.
 - Each task must include:
   - `TASK-###` ID
@@ -34,5 +34,5 @@ command = "npx"
 args = ["@speckit/mcp@latest"]
 ```
 
-If MCP is unavailable, keep `spac/spacks/*.json` and `spac/spacks/index.json`
+If MCP is unavailable, keep `spec/task-artifacts/*.json` and `spec/task-artifacts/index.json`
 as the fallback work queue.

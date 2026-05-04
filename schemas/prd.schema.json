@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/grill-to-spac/prd.schema.json",
-  "title": "Grill to Spac PRD",
+  "$id": "https://example.com/grill-to-spec/prd.schema.json",
+  "title": "Grill to Spec PRD",
   "type": "object",
   "required": [
     "schema_version",
