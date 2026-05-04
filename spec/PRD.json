@@ -3,12 +3,12 @@
   "project": {
     "name": "grill-to-spec",
     "slug": "grill-to-spec",
-    "generated_at": "2026-05-04T03:25:47.659884+00:00"
+    "generated_at": "2026-05-04T03:39:58.126644+00:00"
   },
   "source": {
     "path": "grill-to-spec.md",
     "summary": "# Grill to Spec Local Spec Kit Integration Grill to Spec is a Codex plugin for turning rough product intent into a phase-gated, spec-driven handoff. The workflow is local and artifact-first: 1. Grill the user one question at a time until scope, edge cases, dependencies, quality gates, and testing expectations are explicit. 2. Convert the resolved context into `spec/PRD.json` with stable IDs for user stories, requirements, acceptance criteria, implementation decisions, testing decision",
-    "line_count": 56
+    "line_count": 92
   },
   "problem_statement": "Ad-hoc agent prompts lose requirements, produce weak task breakdowns, and leave no auditable quality signal for generated planning artifacts.",
   "goals": [

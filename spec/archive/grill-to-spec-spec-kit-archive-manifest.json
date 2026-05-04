@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "archive_format": "spec-kit",
   "project": "grill-to-spec",
-  "generated_at": "2026-05-04T03:25:50.034731+00:00",
+  "generated_at": "2026-05-04T03:40:11.325721+00:00",
   "archive": "grill-to-spec-spec-kit-archive.zip",
   "evaluation": "spec/evals/evaluation.json",
   "overall_score": 1.0,

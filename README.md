@@ -17,6 +17,37 @@ The workflow intentionally stops at the planning handoff. It does not auto-start
 Spec Kit implementation, edit product code, or mark generated tasks complete
 unless the user separately approves implementation after reviewing the artifacts.
 
+## How It Works
+
+```mermaid
+flowchart TD
+    A["User idea, repo context, or research file"] --> B["Grill-Me discovery"]
+    B --> C["Dense forward-context summary"]
+    C --> D["to-prd creates spec/PRD.json"]
+    D --> E["to-spec creates spec/task-artifacts/*.json"]
+    E --> F["Spec Kit assets from vendor/spec-kit/"]
+    F --> G["Eval writes spec/evals/evaluation.json"]
+    G --> H["Archive writes spec/archive/*-spec-kit-archive.zip"]
+    H --> I{"Review gate"}
+    I -->|"changes needed"| B
+    I -->|"approved separately"| J["Downstream Spec Kit implementation"]
+```
+
+The diagram shows the intended boundary: Grill to Spec owns discovery,
+planning artifacts, evaluation, and archive creation. Implementation is a
+separate downstream action and requires explicit approval after the user reviews
+the generated PRD, task artifacts, and eval report.
+
+| Phase | Primary input | Output |
+| --- | --- | --- |
+| Grill | User answers, repo context, or research notes | Resolved scope, constraints, edge cases, and quality gates |
+| Forward context | Resolved grill decisions | Dense handoff summary for PRD generation |
+| PRD | Handoff summary or source markdown | `spec/PRD.json` |
+| Tasks | `spec/PRD.json` | `spec/task-artifacts/index.json` and task artifact JSON files |
+| Spec Kit handoff | Task artifacts plus `vendor/spec-kit/` | Local command-template and script handoff assets |
+| Eval | PRD, task artifacts, and bundled Spec Kit assets | `spec/evals/evaluation.json` |
+| Archive | Evaluated artifacts and plugin assets | `spec/archive/*-spec-kit-archive.zip` plus manifest |
+
 ## What Is Included
 
 - `.codex-plugin/plugin.json` - Codex plugin manifest.
@@ -114,6 +145,17 @@ python3 -B scripts/grill_to_spec.py generate \
   --source grill-to-spec.md \
   --output spec \
   --project-name grill-to-spec
+```
+
+Refresh the full local handoff after changing docs, skills, schemas, or vendored
+assets:
+
+```bash
+python3 -B scripts/grill_to_spec.py generate --source grill-to-spec.md --output spec --project-name grill-to-spec
+python3 -B scripts/grill_to_spec.py validate --output spec
+python3 -B scripts/grill_to_spec.py eval --output spec
+python3 -B scripts/grill_to_spec.py archive --output spec
+python3 -B -m unittest tests/test_grill_to_spec.py
 ```
 
 Validate generated artifacts:

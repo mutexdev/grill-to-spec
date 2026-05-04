@@ -16,6 +16,42 @@ phase-gated, spec-driven handoff. The workflow is local and artifact-first:
 5. Evaluate artifact quality and archive the handoff for review or downstream
    execution.
 
+## Workflow Diagram
+
+```mermaid
+flowchart TD
+    A["Rough product intent"] --> B["Grill-Me: ask one question at a time"]
+    B --> C["Resolved context summary"]
+    C --> D["To-PRD: write spec/PRD.json"]
+    D --> E["To-Spec: write spec/task-artifacts/*.json"]
+    E --> F["Vendored Spec Kit scripts and templates"]
+    F --> G["Evaluate spec output"]
+    G --> H["Validate artifact contracts"]
+    H --> I["Archive evaluated Spec-Kit handoff"]
+    I --> J{"User review"}
+    J -->|"revise plan"| B
+    J -->|"approve implementation"| K["Separate downstream implementation"]
+```
+
+The workflow is intentionally artifact-first. Each phase consumes the previous
+phase's reviewed output, and the archive is the shareable boundary between
+planning and any later implementation work.
+
+## Phase Contract
+
+- Grill resolves scope, edge cases, dependencies, testing expectations, and
+  quality gates before any artifact is generated.
+- PRD generation creates stable IDs for stories, requirements, acceptance
+  criteria, implementation decisions, testing decisions, and traceability.
+- Task decomposition creates vertical-slice task artifacts with blockers,
+  HITL/AFK classification, verification commands, and PRD references.
+- Spec Kit integration uses local files from `vendor/spec-kit/`; no server or
+  runtime download is required for the handoff.
+- Evaluation and validation produce an auditable quality signal before archive
+  creation.
+- Implementation is outside this workflow until the user reviews the archive and
+  explicitly approves downstream execution.
+
 ## Design Constraints
 
 - Do not start a network server for Spec Kit behavior.
