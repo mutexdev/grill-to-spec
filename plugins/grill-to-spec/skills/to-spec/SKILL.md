@@ -21,18 +21,16 @@ Convert PRD requirements into independently executable task artifacts.
   - acceptance criteria
   - verification commands
 
-## Spec-Kit MCP
+## Spec Kit Local Assets
 
-If available, use the Spec-Kit MCP tools for init, specify, plan, tasks,
-analyze, and checklist. Keep the bundled `.mcp.json` example for portable plugin
-metadata. Codex's live MCP server entries belong in `~/.codex/config.toml`, for
-example:
+Use the bundled Spec Kit assets from `vendor/spec-kit/`:
 
-```toml
-[mcp_servers.spec-kit]
-command = "npx"
-args = ["@speckit/mcp@latest"]
-```
+- `templates/commands/specify.md`
+- `templates/commands/plan.md`
+- `templates/commands/tasks.md`
+- `templates/commands/analyze.md`
+- `templates/commands/checklist.md`
+- `scripts/bash/*.sh` or `scripts/powershell/*.ps1`
 
-If MCP is unavailable, keep `spec/task-artifacts/*.json` and `spec/task-artifacts/index.json`
-as the fallback work queue.
+Keep `spec/task-artifacts/*.json` and `spec/task-artifacts/index.json` as the
+local work queue.

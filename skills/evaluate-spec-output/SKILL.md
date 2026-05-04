@@ -15,7 +15,7 @@ Use `evals/rubric.json` and score:
 - task artifact traceability
 - task actionability
 - testability
-- MCP readiness
+- Spec Kit asset readiness
 
 The minimum acceptable overall score is `0.75`.
 

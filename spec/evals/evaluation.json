@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-04T02:46:50.740379+00:00",
+  "generated_at": "2026-05-04T03:02:31.839651+00:00",
   "overall_score": 1.0,
   "scores": {
     "prd_completeness": 1.0,
     "task_artifact_traceability": 1.0,
     "task_actionability": 1.0,
     "testability": 1.0,
-    "mcp_readiness": 1.0
+    "spec_kit_asset_readiness": 1.0
   },
   "strengths": [
     "PRD requirements, acceptance criteria, and task artifact tasks share stable IDs.",
@@ -15,11 +15,11 @@
   ],
   "risks": [
     "Human approval is still required after the grill phase before implementation begins.",
-    "Spec-Kit MCP availability is environment-dependent; local artifacts are the fallback."
+    "Spec Kit scripts and templates are bundled locally; no server startup is required."
   ],
   "recommendations": [
     "Review HITL task artifacts before executing implementation tasks.",
-    "Run Spec-Kit analyze/checklist tools when MCP is available to compare against local validation.",
+    "Use the vendored Spec Kit command templates and scripts when producing agent-native spec handoffs.",
     "Create the Spec-Kit archive after eval so the shared handoff contains the latest score."
   ]
 }

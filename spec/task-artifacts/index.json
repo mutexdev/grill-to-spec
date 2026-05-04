@@ -39,8 +39,8 @@
     },
     {
       "id": "TASKART-005",
-      "title": "Prepare Spec-Kit MCP handoff",
-      "path": "task-artifact-005-prepare-spec-kit-mcp-handoff.json",
+      "title": "Prepare Spec Kit local asset handoff",
+      "path": "task-artifact-005-prepare-spec-kit-local-asset-handoff.json",
       "task_count": 2,
       "blocked_by": [
         "TASKART-004"

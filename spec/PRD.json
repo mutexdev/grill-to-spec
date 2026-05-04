@@ -3,26 +3,26 @@
   "project": {
     "name": "grill-to-spec",
     "slug": "grill-to-spec",
-    "generated_at": "2026-05-04T02:46:40.514898+00:00"
+    "generated_at": "2026-05-04T03:01:16.759390+00:00"
   },
   "source": {
     "path": "grill-to-spec.md",
-    "summary": "Architecting Spec-Driven Agentic Workflows: Implementing Compound Skill Chains in OpenAI CodexThe paradigm of artificial intelligence in software engineering has shifted precipitously from isolated, ad-hoc code generation toward orchestrated, autonomous, and highly deterministic execution frameworks. As large language models demonstrate the capability to generate hundreds of thousands of lines of production-ready infrastructure code within condensed timeframes, the primary bottleneck in the soft",
-    "line_count": 1
+    "summary": "# Grill to Spec Local Spec Kit Integration Grill to Spec is a Codex plugin for turning rough product intent into a phase-gated, spec-driven handoff. The workflow is local and artifact-first: 1. Grill the user one question at a time until scope, edge cases, dependencies, quality gates, and testing expectations are explicit. 2. Convert the resolved context into `spec/PRD.json` with stable IDs for user stories, requirements, acceptance criteria, implementation decisions, testing decision",
+    "line_count": 54
   },
-  "problem_statement": "Architecting Spec-Driven Agentic Workflows: Implementing Compound Skill Chains in OpenAI CodexThe paradigm of artificial intelligence in software engineering has shifted precipitously from isolated, ad-hoc code generation toward orchestrated, autonomous, and highly deterministic execution frameworks.",
+  "problem_statement": "Ad-hoc agent prompts lose requirements, produce weak task breakdowns, and leave no auditable quality signal for generated planning artifacts.",
   "goals": [
     "Run a phase-gated Codex workflow that starts with Grill-Me discovery before implementation.",
     "Ask one question at a time during grilling and include the recommended answer.",
     "Create PRD.json with user stories, requirements, acceptance criteria, implementation decisions, testing decisions, and traceability.",
     "Create task artifacts that decompose PRD requirements into vertical-slice tasks with blockers, HITL/AFK classification, and PRD references.",
-    "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
-    "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness.",
-    "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config."
+    "Use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, checklist, and implement workflows.",
+    "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and Spec Kit asset readiness.",
+    "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and vendored Spec Kit assets."
   ],
   "non_goals": [
     "Do not implement product code before the PRD, task artifacts, and quality gates exist.",
-    "Do not require the Spec-Kit MCP server for local validation when a file fallback can be used.",
+    "Do not require a network server for local validation or Spec Kit handoff generation.",
     "Do not require third-party archive tooling beyond the Python standard library."
   ],
   "actors": [
@@ -75,7 +75,7 @@
     {
       "id": "US-005",
       "actor": "Codex user",
-      "story": "As a Codex user, I want the workflow to register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback, so that spec-driven work stays traceable.",
+      "story": "As a Codex user, I want the workflow to use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, checklist, and implement workflows, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-005"
       ]
@@ -83,7 +83,7 @@
     {
       "id": "US-006",
       "actor": "Codex agent",
-      "story": "As a Codex agent, I want the workflow to generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness, so that spec-driven work stays traceable.",
+      "story": "As a Codex agent, I want the workflow to generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and Spec Kit asset readiness, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-006"
       ]
@@ -91,7 +91,7 @@
     {
       "id": "US-007",
       "actor": "engineering team",
-      "story": "As a engineering team, I want the workflow to create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config, so that spec-driven work stays traceable.",
+      "story": "As a engineering team, I want the workflow to create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and vendored Spec Kit assets, so that spec-driven work stays traceable.",
       "requirements": [
         "REQ-007"
       ]
@@ -147,40 +147,40 @@
         "source:4"
       ],
       "acceptance_criteria": [
-        "AC-001"
+        "AC-004"
       ]
     },
     {
       "id": "REQ-005",
-      "statement": "Register Spec-Kit MCP for init, specify, plan, tasks, analyze, and checklist workflows while preserving a local file fallback.",
+      "statement": "Use vendored Spec Kit scripts and templates for specify, clarify, plan, tasks, analyze, checklist, and implement workflows.",
       "priority": "must",
       "source_refs": [
         "source:5"
+      ],
+      "acceptance_criteria": [
+        "AC-001"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "statement": "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and Spec Kit asset readiness.",
+      "priority": "must",
+      "source_refs": [
+        "source:6"
       ],
       "acceptance_criteria": [
         "AC-002"
       ]
     },
     {
-      "id": "REQ-006",
-      "statement": "Generate an evaluation report that scores PRD completeness, task artifact traceability, task actionability, testability, and MCP readiness.",
-      "priority": "must",
-      "source_refs": [
-        "source:6"
-      ],
-      "acceptance_criteria": [
-        "AC-003"
-      ]
-    },
-    {
       "id": "REQ-007",
-      "statement": "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and MCP config.",
+      "statement": "Create a Spec-Kit archive that bundles the eval report, PRD, task artifacts, grill-me skill, plugin manifest, and vendored Spec Kit assets.",
       "priority": "must",
       "source_refs": [
         "source:7"
       ],
       "acceptance_criteria": [
-        "AC-001"
+        "AC-003"
       ]
     },
     {
@@ -191,7 +191,7 @@
         "source:8"
       ],
       "acceptance_criteria": [
-        "AC-002"
+        "AC-004"
       ]
     },
     {
@@ -202,7 +202,7 @@
         "source:9"
       ],
       "acceptance_criteria": [
-        "AC-003"
+        "AC-001"
       ]
     },
     {
@@ -213,18 +213,18 @@
         "source:10"
       ],
       "acceptance_criteria": [
-        "AC-001"
+        "AC-002"
       ]
     },
     {
       "id": "REQ-011",
-      "statement": "Use deterministic local JSON files when the Spec-Kit MCP server is not installed or reachable.",
+      "statement": "Do not require a network server for Spec Kit workflows; use bundled scripts and templates from vendor/spec-kit.",
       "priority": "should",
       "source_refs": [
         "source:11"
       ],
       "acceptance_criteria": [
-        "AC-002"
+        "AC-003"
       ]
     },
     {
@@ -235,30 +235,34 @@
         "source:12"
       ],
       "acceptance_criteria": [
-        "AC-003"
+        "AC-004"
       ]
     }
   ],
   "acceptance_criteria": [
     {
       "id": "AC-001",
-      "statement": "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+      "statement": "Given the plugin manifest, when Codex loads the plugin, then no server entry is registered or launched."
     },
     {
       "id": "AC-002",
-      "statement": "Given PRD.json, when task decomposition runs, then task artifacts contain vertical-slice tasks with PRD references."
+      "statement": "Given a marketplace install, when Codex copies `plugins/grill-to-spec/`, then the package includes skills, runtime scripts, schemas, eval rubric, and vendored Spec Kit assets."
     },
     {
       "id": "AC-003",
-      "statement": "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+      "statement": "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, and an eval report."
+    },
+    {
+      "id": "AC-004",
+      "statement": "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
     }
   ],
   "implementation_decisions": [
     "Bundle grill-me, to-prd, to-spec, and evaluation as Codex skills in one plugin.",
-    "Keep the portable .mcp.json example and document that Codex MCP servers are configured in ~/.codex/config.toml.",
+    "Bundle Spec Kit scripts, command templates, and workflow metadata under vendor/spec-kit.",
     "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
     "Represent task artifacts as vertical slices with task-level PRD references and blocker metadata.",
-    "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and MCP metadata."
+    "Package the final evaluated handoff as a Spec-Kit archive that includes grill-me and local Spec Kit assets."
   ],
   "testing_decisions": [
     "Validate the generator with unit tests that read the emitted JSON artifacts.",
@@ -300,7 +304,7 @@
           "US-004"
         ],
         "acceptance_criteria_ids": [
-          "AC-001"
+          "AC-004"
         ]
       },
       {
@@ -309,7 +313,7 @@
           "US-005"
         ],
         "acceptance_criteria_ids": [
-          "AC-002"
+          "AC-001"
         ]
       },
       {
@@ -318,7 +322,7 @@
           "US-006"
         ],
         "acceptance_criteria_ids": [
-          "AC-003"
+          "AC-002"
         ]
       },
       {
@@ -327,7 +331,7 @@
           "US-007"
         ],
         "acceptance_criteria_ids": [
-          "AC-001"
+          "AC-003"
         ]
       },
       {
@@ -336,35 +340,35 @@
           "US-008"
         ],
         "acceptance_criteria_ids": [
-          "AC-002"
+          "AC-004"
         ]
       },
       {
         "requirement_id": "REQ-009",
         "user_story_ids": [],
         "acceptance_criteria_ids": [
-          "AC-003"
+          "AC-001"
         ]
       },
       {
         "requirement_id": "REQ-010",
         "user_story_ids": [],
         "acceptance_criteria_ids": [
-          "AC-001"
+          "AC-002"
         ]
       },
       {
         "requirement_id": "REQ-011",
         "user_story_ids": [],
         "acceptance_criteria_ids": [
-          "AC-002"
+          "AC-003"
         ]
       },
       {
         "requirement_id": "REQ-012",
         "user_story_ids": [],
         "acceptance_criteria_ids": [
-          "AC-003"
+          "AC-004"
         ]
       }
     ],

@@ -14,10 +14,10 @@
       "description": "Implement or verify the workflow behavior for REQ-010.",
       "prd_refs": [
         "REQ-010",
-        "AC-001"
+        "AC-002"
       ],
       "acceptance_criteria": [
-        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+        "Given a marketplace install, when Codex copies `plugins/grill-to-spec/`, then the package includes skills, runtime scripts, schemas, eval rubric, and vendored Spec Kit assets."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",

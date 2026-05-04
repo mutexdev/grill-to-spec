@@ -26,11 +26,12 @@ artifacts.
 - Create task artifacts that contain vertical-slice tasks with blockers, HITL/AFK
   classification, acceptance criteria, and PRD references.
 - Evaluate the generated outputs so the agent can justify quality.
+- Use vendored Spec Kit scripts and templates locally; do not start or require an MCP server.
 
 ## Constraints
 
 - Run in Codex interactive mode.
-- Use local files when the Spec-Kit MCP server is unavailable.
+- Use local Spec Kit assets instead of a network MCP bridge.
 - Avoid coding until a PRD and task breakdown exist.
 
 ## Acceptance Criteria
@@ -49,12 +50,32 @@ DENSE_PRODUCT_RESEARCH = (
     "process called Grill-Me, synthesizes the resulting context into a "
     "machine-actionable Product Requirements Document with To-PRD, decomposes "
     "that document into granular task artifacts with tasks, links the components through "
-    "Spec-Kit MCP integration, and adds evals to justify how good "
+    "vendored Spec Kit scripts and templates, and adds evals to justify how good "
     "the outputs are."
 )
 
 
 class GrillToSpecTests(unittest.TestCase):
+    def test_multiline_bullets_are_extracted_as_single_items(self):
+        from scripts.grill_to_spec import extract_bullets
+
+        bullets = extract_bullets(
+            """
+            - Given the plugin manifest, when Codex loads the plugin, then no
+              server entry is registered or launched.
+            - Given a marketplace install, when Codex copies the package, then
+              runtime assets are available.
+            """
+        )
+
+        self.assertEqual(
+            bullets,
+            [
+                "Given the plugin manifest, when Codex loads the plugin, then no server entry is registered or launched.",
+                "Given a marketplace install, when Codex copies the package, then runtime assets are available.",
+            ],
+        )
+
     def test_marketplace_uses_cacheable_plugin_source_layout(self):
         marketplace = json.loads((ROOT / ".agents/plugins/marketplace.json").read_text())
         plugin_entry = next(
@@ -65,12 +86,43 @@ class GrillToSpecTests(unittest.TestCase):
         package_root = ROOT / "plugins/grill-to-spec"
         mirrored_files = [
             ".codex-plugin/plugin.json",
-            ".mcp.json",
+            "evals/rubric.json",
+            "schemas/prd.schema.json",
+            "schemas/task-artifact.schema.json",
+            "scripts/__init__.py",
+            "scripts/grill_to_spec.py",
             "skills/evaluate-spec-output/SKILL.md",
             "skills/grill-me/SKILL.md",
             "skills/grill-to-spec/SKILL.md",
             "skills/to-prd/SKILL.md",
             "skills/to-spec/SKILL.md",
+            "vendor/spec-kit/LICENSE",
+            "vendor/spec-kit/scripts/bash/check-prerequisites.sh",
+            "vendor/spec-kit/scripts/bash/common.sh",
+            "vendor/spec-kit/scripts/bash/create-new-feature.sh",
+            "vendor/spec-kit/scripts/bash/setup-plan.sh",
+            "vendor/spec-kit/scripts/bash/setup-tasks.sh",
+            "vendor/spec-kit/scripts/powershell/check-prerequisites.ps1",
+            "vendor/spec-kit/scripts/powershell/common.ps1",
+            "vendor/spec-kit/scripts/powershell/create-new-feature.ps1",
+            "vendor/spec-kit/scripts/powershell/setup-plan.ps1",
+            "vendor/spec-kit/scripts/powershell/setup-tasks.ps1",
+            "vendor/spec-kit/templates/checklist-template.md",
+            "vendor/spec-kit/templates/commands/analyze.md",
+            "vendor/spec-kit/templates/commands/checklist.md",
+            "vendor/spec-kit/templates/commands/clarify.md",
+            "vendor/spec-kit/templates/commands/constitution.md",
+            "vendor/spec-kit/templates/commands/implement.md",
+            "vendor/spec-kit/templates/commands/plan.md",
+            "vendor/spec-kit/templates/commands/specify.md",
+            "vendor/spec-kit/templates/commands/tasks.md",
+            "vendor/spec-kit/templates/commands/taskstoissues.md",
+            "vendor/spec-kit/templates/constitution-template.md",
+            "vendor/spec-kit/templates/plan-template.md",
+            "vendor/spec-kit/templates/spec-template.md",
+            "vendor/spec-kit/templates/tasks-template.md",
+            "vendor/spec-kit/templates/vscode-settings.json",
+            "vendor/spec-kit/workflows/speckit/workflow.yml",
         ]
         for relative_path in mirrored_files:
             packaged = package_root / relative_path
@@ -78,6 +130,20 @@ class GrillToSpecTests(unittest.TestCase):
             self.assertTrue(packaged.is_file(), relative_path)
             self.assertFalse(packaged.is_symlink(), relative_path)
             self.assertEqual(packaged.read_text(), canonical.read_text())
+
+    def test_plugin_package_does_not_register_mcp_servers(self):
+        manifest_paths = [
+            ROOT / ".codex-plugin/plugin.json",
+            ROOT / "plugins/grill-to-spec/.codex-plugin/plugin.json",
+        ]
+        for manifest_path in manifest_paths:
+            manifest = json.loads(manifest_path.read_text())
+            self.assertNotIn("mcpServers", manifest)
+            self.assertNotIn("MCP", manifest["interface"]["capabilities"])
+            self.assertNotIn("@speckit/mcp", json.dumps(manifest))
+
+        self.assertFalse((ROOT / ".mcp.json").exists())
+        self.assertFalse((ROOT / "plugins/grill-to-spec/.mcp.json").exists())
 
     def test_public_plugin_names_use_spec_not_spac(self):
         plugin_manifest_paths = [
@@ -219,9 +285,10 @@ class GrillToSpecTests(unittest.TestCase):
             self.assertIn("one question at a time", requirement_text)
             self.assertIn("prd.json", requirement_text)
             self.assertIn("task artifacts", requirement_text)
-            self.assertIn("spec-kit mcp", requirement_text)
+            self.assertIn("spec kit scripts", requirement_text)
             self.assertIn("evaluation", requirement_text)
             self.assertIn("spec-kit archive", requirement_text)
+            self.assertNotIn("mcp", requirement_text)
 
             for story in prd["user_stories"]:
                 self.assertLessEqual(len(story["story"]), 260)
@@ -258,7 +325,7 @@ class GrillToSpecTests(unittest.TestCase):
                 "task_artifact_traceability",
                 "task_actionability",
                 "testability",
-                "mcp_readiness",
+                "spec_kit_asset_readiness",
             ]:
                 self.assertIn(dimension, report["scores"])
                 self.assertGreaterEqual(report["scores"][dimension], 0.0)
@@ -307,7 +374,8 @@ class GrillToSpecTests(unittest.TestCase):
                 "skills/grill-me/SKILL.md",
                 "skills/grill-to-spec/SKILL.md",
                 ".codex-plugin/plugin.json",
-                ".mcp.json",
+                "vendor/spec-kit/scripts/bash/setup-plan.sh",
+                "vendor/spec-kit/templates/commands/specify.md",
             }
             self.assertTrue(expected_entries.issubset(entries))
 

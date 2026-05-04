@@ -1,6 +1,6 @@
 ---
 name: grill-to-spec
-description: Orchestrate the full Codex spec-driven chain from grill-me interrogation to PRD.json, task artifact generation, Spec-Kit MCP handoff, and output evaluation. Use when the user asks to run grill-to-spec, create a PRD.json, create task artifacts/tasks, sync with Spec-Kit, or justify planning output quality.
+description: Orchestrate the full Codex spec-driven chain from grill-me interrogation to PRD.json, task artifact generation, local Spec Kit handoff, and output evaluation. Use when the user asks to run grill-to-spec, create a PRD.json, create task artifacts/tasks, prepare Spec Kit assets, or justify planning output quality.
 ---
 
 # Grill to Spec
@@ -12,8 +12,8 @@ PRD, task artifacts, and eval report exist and the user approves implementation.
 
 - Current conversation context, product research, or an explicit source file.
 - Existing repository context, if available.
-- Optional Spec-Kit MCP tools. Prefer them when available; use local artifacts
-  when MCP is unavailable.
+- Bundled Spec Kit scripts, command templates, and workflow metadata under
+  `vendor/spec-kit/`.
 
 ## Required Artifacts
 
@@ -56,12 +56,12 @@ Write artifacts under `spec/` unless the user names another output directory:
    - Each task artifact must include tasks, blockers, HITL/AFK type, PRD references,
      acceptance criteria, and verification commands.
 
-5. **Spec-Kit MCP Handoff**
-   - If the Spec-Kit MCP server is available, use its tools in this order:
-     `speckit_init`, `speckit_specify`, `speckit_plan`, `speckit_tasks`,
-     `speckit_analyze`, `speckit_checklist`.
-   - If MCP is unavailable, keep the local `spec/` artifacts as the source of
-     truth and state that fallback explicitly.
+5. **Spec Kit Local Handoff**
+   - Use the bundled `vendor/spec-kit/templates/commands/*.md` command templates
+     for specify, clarify, plan, tasks, analyze, checklist, and implement flows.
+   - Use the bundled `vendor/spec-kit/scripts/` shell or PowerShell helpers when
+     a project needs the upstream Spec Kit file layout.
+   - Keep the local `spec/` artifacts as the source of truth.
 
 6. **Evaluate**
    - Use `evaluate-spec-output` behavior.
@@ -71,7 +71,8 @@ Write artifacts under `spec/` unless the user names another output directory:
 7. **Archive**
    - Run `python3 scripts/grill_to_spec.py archive --output spec`.
    - The archive must include `spec/evals/evaluation.json`,
-     `skills/grill-me/SKILL.md`, `.codex-plugin/plugin.json`, and `.mcp.json`.
+     `skills/grill-me/SKILL.md`, `.codex-plugin/plugin.json`, and
+     `vendor/spec-kit/`.
    - Use the generated manifest as the shareable handoff inventory.
 
 8. **Verify**

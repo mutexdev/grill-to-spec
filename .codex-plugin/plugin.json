@@ -1,13 +1,13 @@
 {
   "name": "grill-to-spec",
-  "version": "0.1.0",
-  "description": "Codex plugin for grilling requirements, generating PRD.json, decomposing task artifacts, evaluating output quality, and creating a Spec-Kit archive.",
+  "version": "0.1.1",
+  "description": "Codex plugin for grilling requirements, generating PRD.json, decomposing task artifacts, evaluating output quality, and using vendored Spec Kit assets locally.",
   "author": {
     "name": "grill-to-spec maintainers",
     "email": "maintainers@example.com",
     "url": "https://github.com/mutexdev/grill-to-spec"
   },
-  "homepage": "https://docs.rs/spec-kit-mcp/latest/spec_kit_mcp/",
+  "homepage": "https://github.github.com/spec-kit/",
   "repository": "https://github.com/mutexdev/grill-to-spec",
   "license": "MIT",
   "keywords": [
@@ -19,22 +19,20 @@
     "evaluation"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Grill to Spec",
-    "shortDescription": "Turn grilled context into PRD.json, task artifacts, tasks, evals, and a Spec-Kit archive.",
-    "longDescription": "Runs a phase-gated Codex workflow: grill the user one question at a time, synthesize a machine-actionable PRD.json, decompose the PRD into traceable task artifacts with tasks, evaluate artifact quality, and save a Spec-Kit archive with the eval and grill-me skill.",
+    "shortDescription": "Turn grilled context into PRD.json, task artifacts, tasks, evals, and local Spec Kit handoffs.",
+    "longDescription": "Runs a phase-gated Codex workflow: grill the user one question at a time, synthesize a machine-actionable PRD.json, decompose the PRD into traceable task artifacts with tasks, evaluate artifact quality, and save a Spec Kit handoff archive with vendored scripts and templates.",
     "developerName": "grill-to-spec maintainers",
     "category": "Productivity",
     "capabilities": [
       "Interactive",
       "Write",
       "Planning",
-      "MCP",
       "Evaluation",
       "Archive"
     ],
-    "websiteURL": "https://docs.rs/spec-kit-mcp/latest/spec_kit_mcp/",
+    "websiteURL": "https://github.github.com/spec-kit/",
     "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
     "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
     "defaultPrompt": [

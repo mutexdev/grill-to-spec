@@ -6,7 +6,7 @@ phase-gated spec workflow:
 1. Grill the user one question at a time.
 2. Generate a machine-actionable `PRD.json`.
 3. Decompose the PRD into traceable task artifacts with tasks.
-4. Register Spec-Kit MCP for external spec/task tooling.
+4. Use vendored Spec Kit scripts, command templates, and workflow metadata.
 5. Evaluate the generated outputs with a repeatable rubric.
 6. Save the evaluated handoff as a Spec-Kit archive that includes `grill-me`.
 
@@ -20,7 +20,6 @@ The generated artifacts from the included product research live under
   points at the cacheable plugin package.
 - `plugins/grill-to-spec/` - installable plugin package used by Codex's plugin
   cache.
-- `.mcp.json` - Spec-Kit MCP server registration.
 - `skills/` - bundled Codex skills:
   - `grill-to-spec`
   - `grill-me`
@@ -31,6 +30,8 @@ The generated artifacts from the included product research live under
   evaluator.
 - `schemas/` - JSON schema references for PRD and task artifacts.
 - `evals/rubric.json` - scoring rubric.
+- `vendor/spec-kit/` - vendored Spec Kit scripts, command templates, and
+  workflow metadata copied from the upstream GitHub Spec Kit project.
 - `tests/test_grill_to_spec.py` - regression tests for PRD, task artifact, and eval
   output.
 - `spec/archive/` - generated Spec-Kit archives and archive manifests.
@@ -112,8 +113,8 @@ python3 -B scripts/grill_to_spec.py archive --output spec
 
 This refreshes `spec/evals/evaluation.json`, validates the artifacts, and writes
 `spec/archive/<project>-spec-kit-archive.zip` plus a JSON manifest. The archive
-contains the PRD, task artifacts, eval report, `grill-me` skill, plugin manifest, and
-Spec-Kit MCP config.
+contains the PRD, task artifacts, eval report, `grill-me` skill, plugin
+manifest, and vendored Spec Kit assets.
 
 Run tests:
 
@@ -121,34 +122,17 @@ Run tests:
 python3 -B -m unittest tests/test_grill_to_spec.py
 ```
 
-## Spec-Kit MCP
+## Spec Kit Assets
 
-The plugin keeps a portable `spec-kit` MCP server declaration in `.mcp.json`:
+This plugin does not register or start a server. Spec Kit integration is local:
 
-```json
-{
-  "mcpServers": {
-    "spec-kit": {
-      "command": "npx",
-      "args": ["@speckit/mcp@latest"]
-    }
-  }
-}
-```
+- `vendor/spec-kit/scripts/bash/*.sh`
+- `vendor/spec-kit/scripts/powershell/*.ps1`
+- `vendor/spec-kit/templates/commands/*.md`
+- `vendor/spec-kit/workflows/speckit/workflow.yml`
 
-Codex's own MCP server configuration lives in `~/.codex/config.toml`. If you
-want to register the same server directly with Codex, add:
-
-```toml
-[mcp_servers.spec-kit]
-command = "npx"
-args = ["@speckit/mcp@latest"]
-```
-
-When the MCP server is available, the `grill-to-spec` skill should prefer the
-Spec-Kit flow: init, specify, plan, tasks, analyze, and checklist. When MCP is
-not available, the local `spec/` JSON artifacts are the fallback source of
-truth.
+The `grill-to-spec` skill uses the local PRD/task artifacts as the source of
+truth, then packages those artifacts together with the vendored Spec Kit assets.
 
 ## Verification Status
 
@@ -158,7 +142,6 @@ Current local verification:
 python3 -B -m unittest tests/test_grill_to_spec.py
 python3 -B scripts/grill_to_spec.py validate --output spec
 python3 -B -m json.tool .codex-plugin/plugin.json
-python3 -B -m json.tool .mcp.json
 python3 -B scripts/grill_to_spec.py archive --output spec
 ```
 

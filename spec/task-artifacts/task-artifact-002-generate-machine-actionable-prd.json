@@ -20,7 +20,7 @@
         "AC-003"
       ],
       "acceptance_criteria": [
-        "Given generated artifacts, when evaluation runs, then scores and findings justify output quality."
+        "Given product research, when `scripts/grill_to_spec.py generate` runs, then it writes `PRD.json`, task artifacts, and an eval report."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",
@@ -33,10 +33,10 @@
       "description": "Implement or verify the workflow behavior for REQ-004.",
       "prd_refs": [
         "REQ-004",
-        "AC-001"
+        "AC-004"
       ],
       "acceptance_criteria": [
-        "Given the resolved grill context, when PRD generation runs, then PRD.json includes goals, stories, requirements, and acceptance criteria."
+        "Given generated artifacts, when archive creation runs, then the archive contains the PRD, task artifacts, eval report, plugin manifest, grill-me skill, and vendored Spec Kit assets."
       ],
       "verification": [
         "Run python3 -m unittest tests/test_grill_to_spec.py",
