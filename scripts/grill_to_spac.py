@@ -297,7 +297,7 @@ def build_prd(source_text: str, project_name: str | None = None, source_path: st
         "acceptance_criteria": acceptance,
         "implementation_decisions": [
             "Bundle grill-me, to-prd, to-spac, and evaluation as Codex skills in one plugin.",
-            "Register the Spec-Kit MCP server through .mcp.json and prefer MCP tools when available.",
+            "Keep the portable .mcp.json example and document that Codex MCP servers are configured in ~/.codex/config.toml.",
             "Use deterministic local JSON artifacts as the fallback contract for tests and offline runs.",
             "Represent spacks as vertical slices with task-level PRD references and blocker metadata.",
         ],

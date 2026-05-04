@@ -98,7 +98,7 @@ python3 -B -m unittest tests/test_grill_to_spac.py
 
 ## Spec-Kit MCP
 
-The plugin declares a `spec-kit` MCP server in `.mcp.json`:
+The plugin keeps a portable `spec-kit` MCP server declaration in `.mcp.json`:
 
 ```json
 {
@@ -109,6 +109,15 @@ The plugin declares a `spec-kit` MCP server in `.mcp.json`:
     }
   }
 }
+```
+
+Codex's own MCP server configuration lives in `~/.codex/config.toml`. If you
+want to register the same server directly with Codex, add:
+
+```toml
+[mcp_servers.spec-kit]
+command = "npx"
+args = ["@speckit/mcp@latest"]
 ```
 
 When the MCP server is available, the `grill-to-spac` skill should prefer the

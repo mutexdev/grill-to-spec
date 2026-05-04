@@ -24,8 +24,15 @@ Convert PRD requirements into independently executable spacks.
 ## Spec-Kit MCP
 
 If available, use the Spec-Kit MCP tools for init, specify, plan, tasks,
-analyze, and checklist. The bundled `.mcp.json` registers `spec-kit` using
-`npx @speckit/mcp@latest`.
+analyze, and checklist. Keep the bundled `.mcp.json` example for portable plugin
+metadata. Codex's live MCP server entries belong in `~/.codex/config.toml`, for
+example:
+
+```toml
+[mcp_servers.spec-kit]
+command = "npx"
+args = ["@speckit/mcp@latest"]
+```
 
 If MCP is unavailable, keep `spac/spacks/*.json` and `spac/spacks/index.json`
 as the fallback work queue.
